@@ -1,0 +1,2112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0a1228">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Vinayak Tiles">
+  <title>Vinayak Tiles - Deliveries</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+:root{
+  --bg:#0a1228; --bg-2:#111b38; --bg-3:#1b2850;
+  --card:#ffffff; --ink:#0f172a; --muted:#64748b; --line:#e6eaf3; --soft:#f3f5fa;
+  --today:#ff3b30;
+  --pending:#c96a0a; --completed:#15803d; --undelivered:#d92d20; --rescheduled:#2563eb; --overdue:#b42318;
+  --radius:22px;
+  --safe-b:env(safe-area-inset-bottom,0px);
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:#e9edf8;font-family:'Manrope',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;font-size:16px;line-height:1.45;-webkit-tap-highlight-color:transparent}
+[hidden]{display:none!important}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer;border:0;background:none}
+:focus-visible{outline:3px solid #7aa7ff;outline-offset:2px}
+h1,h2,h3,p{margin:0}
+.wrap{max-width:1040px;margin:0 auto;padding-left:16px;padding-right:16px}
+
+/* top bar */
+.topbar{position:sticky;top:0;z-index:20;background:var(--bg);padding-top:calc(env(safe-area-inset-top,0px) + 12px);padding-bottom:10px;border-bottom:1px solid #1d2a52}
+.topbar-in{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.brand{display:flex;align-items:center;gap:12px}
+.brand-mark{width:40px;height:40px;border-radius:12px;background:#fff;color:var(--bg);font-weight:800;font-size:22px;display:grid;place-items:center}
+.brand-name{font-weight:800;font-size:18px;line-height:1.1}
+.brand-sub{font-size:13px;color:#9fb0d6}
+.icon-btn{width:44px;height:44px;border-radius:50%;background:var(--bg-3);display:grid;place-items:center}
+.icon-btn svg{width:22px;height:22px;fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.search{width:100%;min-height:46px;border-radius:14px;border:1px solid #243566;background:var(--bg-2);padding:0 14px;color:#fff;font-size:16px}
+.search::placeholder{color:#8b9cc4}
+
+.main{padding-top:18px;padding-bottom:calc(150px + var(--safe-b))}
+.loading,.empty{padding:28px 16px;text-align:center;color:#9fb0d6}
+.empty{background:var(--bg-2);border-radius:var(--radius)}
+.error-card{background:#fff;color:var(--ink);border-radius:var(--radius);padding:20px;display:grid;gap:12px}
+
+/* hero */
+.hero{background:var(--card);color:var(--ink);border-radius:28px;padding:22px;display:grid;grid-template-columns:auto 1fr;gap:22px;align-items:center}
+.hero-day{color:var(--today);font-weight:800;font-size:20px}
+.hero-num{font-weight:800;font-size:92px;line-height:.9;letter-spacing:-.04em}
+.hero-month{color:var(--muted);font-weight:600;margin-top:6px}
+.hero-side{border-left:1px solid var(--line);padding-left:20px;display:grid;gap:4px}
+.hero-count{font-size:15px;color:var(--muted);font-weight:600}
+.hero-next-label{font-size:13px;color:var(--muted);margin-top:8px}
+.hero-next{font-weight:800;font-size:18px;line-height:1.25}
+.hero-next small{display:block;font-weight:600;font-size:14px;color:var(--muted)}
+
+/* summary */
+.sums{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:12px}
+.sum{background:var(--card);color:var(--ink);border-radius:20px;padding:14px 16px;text-align:left;display:grid;gap:2px;min-height:84px}
+.sum b{font-size:30px;font-weight:800;line-height:1.1}
+.sum span{font-size:14px;color:var(--muted);font-weight:600;display:flex;align-items:center;gap:8px}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--c,#94a3b8);display:inline-block;flex:none}
+
+/* sections */
+.sec{margin-top:26px}
+.sec-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:12px}
+.sec-head h2{font-size:19px;font-weight:800}
+.sec-head .count{color:#9fb0d6;font-weight:600;font-size:14px}
+.link{color:#9ec0ff;font-weight:700;min-height:44px;padding:0 4px}
+.cards{display:grid;gap:12px;grid-template-columns:1fr}
+
+/* status colours */
+.st-pending{--c:var(--pending);--cbg:#fdf0e1}
+.st-completed{--c:var(--completed);--cbg:#e2f5ea}
+.st-undelivered{--c:var(--undelivered);--cbg:#fde8e6}
+.st-rescheduled{--c:var(--rescheduled);--cbg:#e4ecfd}
+.st-overdue{--c:var(--overdue);--cbg:var(--overdue)}
+.pill{background:var(--cbg);color:var(--c);border-radius:999px;padding:4px 12px;font-size:13px;font-weight:800;white-space:nowrap}
+.pill.st-overdue{color:#fff}
+
+/* delivery card */
+.dcard{background:var(--card);color:var(--ink);border-radius:var(--radius);padding:16px 16px 12px 20px;box-shadow:inset 6px 0 0 var(--c,#94a3b8);cursor:pointer}
+.dc-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.dc-time{font-weight:800;font-size:17px}
+.dc-time small{display:block;font-size:13px;font-weight:600;color:var(--muted)}
+.dc-cust{font-size:19px;font-weight:800;margin:6px 0 8px;line-height:1.25}
+.dc-kv{margin:0;display:grid;grid-template-columns:1fr 1fr;gap:8px 14px}
+.dc-kv div.wide{grid-column:1/-1}
+.dc-kv dt{font-size:12px;color:var(--muted);font-weight:600}
+.dc-kv dd{margin:0;font-weight:700;overflow-wrap:anywhere}
+.dc-note{margin-top:10px;font-size:13px;font-weight:700;color:var(--rescheduled)}
+.dc-actions{margin-top:10px;display:flex;gap:8px;flex-wrap:wrap}
+.dc-actions .btn{flex:1 1 auto;min-width:0;padding:0 12px;font-size:15px}
+
+/* buttons */
+.btn{min-height:44px;padding:0 18px;border-radius:14px;background:var(--ink);color:#fff;font-weight:800}
+.btn-ghost{background:var(--soft);color:var(--ink)}
+.btn-wide{width:100%;margin-top:14px;background:var(--bg-3);color:#fff}
+
+/* calendar */
+.cal-bar{display:grid;gap:12px}
+.seg{display:grid;grid-template-columns:repeat(3,1fr);background:var(--bg-2);border-radius:14px;padding:4px}
+.seg button{min-height:40px;border-radius:11px;font-weight:800;color:#9fb0d6}
+.seg button[aria-pressed="true"]{background:#fff;color:var(--bg)}
+.cal-nav{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.cal-title{font-weight:800;font-size:19px;flex:1;text-align:center}
+.cal-nav .icon-btn svg{width:20px;height:20px}
+.cal-today{min-height:40px;padding:0 14px;border-radius:12px;background:var(--bg-3);font-weight:800;color:#fff}
+.cal-card{background:var(--card);color:var(--ink);border-radius:26px;padding:12px;margin-top:12px}
+.mg-head,.mg{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.mg-head span{text-align:center;font-size:12px;font-weight:700;color:var(--muted);padding:4px 0 8px}
+.mg button{min-height:54px;border-radius:14px;display:grid;align-content:center;justify-items:center;gap:2px;color:var(--ink);font-weight:700;position:relative}
+.mg button.other{color:#a5b0c4}
+.mg button.sel{background:var(--soft);box-shadow:inset 0 0 0 2px var(--ink)}
+.mg .num{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-size:15px}
+.mg button.today .num{background:var(--today);color:#fff;font-weight:800}
+.mg .dots{display:flex;gap:3px;height:7px}
+.mg .dots i{width:6px;height:6px;border-radius:50%;background:var(--c)}
+.mg .n{font-size:10px;font-weight:800;color:var(--muted);position:absolute;top:4px;right:6px}
+.wk{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.wk button{min-height:76px;border-radius:16px;display:grid;align-content:center;justify-items:center;gap:2px;font-weight:700;color:var(--ink)}
+.wk button small{font-size:12px;color:var(--muted);font-weight:700}
+.wk button.sel{background:var(--soft);box-shadow:inset 0 0 0 2px var(--ink)}
+.wk button.today .num{background:var(--today);color:#fff}
+.wk .num{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;font-size:16px;font-weight:800}
+.wk .n{font-size:12px;font-weight:800;color:var(--muted)}
+.day-head{margin:22px 0 10px;font-weight:800;font-size:17px;display:flex;justify-content:space-between;align-items:baseline}
+.day-head span{font-size:14px;font-weight:600;color:#9fb0d6}
+
+/* deliveries list */
+.chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;margin:0 -16px;padding-left:16px;padding-right:16px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;min-height:42px;padding:0 16px;border-radius:999px;background:var(--bg-2);color:#c9d5f2;font-weight:700;border:1px solid #243566}
+.chip[aria-pressed="true"]{background:#fff;color:var(--bg);border-color:#fff}
+.filters{background:var(--bg-2);border-radius:18px;padding:0 14px;margin-top:10px}
+.filters summary{min-height:48px;display:flex;align-items:center;font-weight:700;cursor:pointer}
+.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding-bottom:12px}
+.fgrid label{display:grid;gap:4px;font-size:13px;font-weight:600;color:#9fb0d6}
+.fgrid input,.fgrid select{min-height:44px;border-radius:12px;border:1px solid #243566;background:var(--bg);padding:0 10px;color:#fff;width:100%}
+.filters .btn{margin-bottom:14px}
+.list-info{margin:14px 0 10px;color:#9fb0d6;font-weight:600;font-size:14px}
+
+/* panels */
+.panel{background:#fff;color:var(--ink);border-radius:var(--radius);padding:20px;margin-bottom:12px;display:grid;gap:8px}
+.panel h2{font-size:19px;font-weight:800}
+.panel p{color:var(--muted)}
+.info{margin:0;display:grid;gap:10px}
+.info dt{font-size:12px;color:var(--muted);font-weight:600}
+.info dd{margin:0;font-weight:700}
+
+/* floating button and navigation */
+.fab{position:fixed;right:18px;bottom:calc(86px + var(--safe-b));width:60px;height:60px;border-radius:50%;background:#fff;box-shadow:0 8px 24px rgba(0,0,0,.45);display:grid;place-items:center;z-index:30}
+.fab svg{width:28px;height:28px;fill:none;stroke:var(--bg);stroke-width:2.6;stroke-linecap:round}
+.nav{position:fixed;left:0;right:0;bottom:0;z-index:25;display:grid;grid-template-columns:repeat(5,1fr);background:#0e1832;border-top:1px solid #1d2a52;padding:6px 6px calc(6px + var(--safe-b))}
+.nav button{min-height:56px;display:grid;justify-items:center;align-content:center;gap:2px;color:#8b9cc4;font-size:12px;font-weight:700;border-radius:14px}
+.nav svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.nav svg circle{fill:currentColor;stroke:none}
+.nav button[aria-current="page"]{color:#fff;background:var(--bg-3)}
+
+/* detail sheet */
+.sheet{position:fixed;inset:0;z-index:50;display:flex;align-items:flex-end;justify-content:center}
+.sheet-back{position:absolute;inset:0;background:rgba(3,8,22,.7)}
+.sheet-panel{position:relative;background:#fff;color:var(--ink);width:100%;max-width:600px;max-height:90vh;overflow:auto;border-radius:28px 28px 0 0;padding:10px 20px calc(24px + var(--safe-b));animation:rise .22s ease-out}
+.sheet-grip{width:44px;height:5px;border-radius:3px;background:#d3d9e6;margin:0 auto 14px}
+.sh-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.sh-head h2{font-size:22px;font-weight:800;line-height:1.2}
+.sh-id{color:var(--muted);font-weight:600;font-size:13px;margin-top:2px;overflow-wrap:anywhere}
+.sh-rows{margin:16px 0 0;display:grid;gap:14px}
+.sh-rows dt{font-size:12px;color:var(--muted);font-weight:600}
+.sh-rows dd{margin:0;font-weight:700;overflow-wrap:anywhere;white-space:pre-wrap}
+.sh-rows a{color:var(--rescheduled)}
+.sheet-panel .btn{width:100%;margin-top:20px}
+@keyframes rise{from{transform:translateY(40px);opacity:.4}to{transform:none;opacity:1}}
+
+/* delivery form */
+body.in-form .fab,body.in-form .nav{display:none}
+body.in-form .main{padding-bottom:24px}
+.form-head{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.form-head h1{font-size:24px;font-weight:800}
+.form-info{color:#9fb0d6;margin:0 0 14px;font-weight:600}
+.form-info b{color:#fff}
+.form-card{background:#fff;color:var(--ink);border-radius:var(--radius);padding:18px;margin-bottom:12px;display:grid;gap:14px}
+.form-card h2{font-size:17px;font-weight:800}
+.fld{display:grid;gap:6px;align-content:start}
+.fld label{font-size:14px;font-weight:700}
+.fld .opt{color:var(--muted);font-weight:600}
+.fld input,.fld select,.fld textarea{width:100%;min-height:48px;border-radius:12px;border:1.5px solid #cfd6e6;background:#fff;color:var(--ink);padding:10px 12px;font-weight:600}
+.fld textarea{min-height:92px;resize:vertical}
+.fld input:disabled{background:var(--soft);color:var(--muted)}
+.fld.bad input,.fld.bad select,.fld.bad textarea{border-color:var(--undelivered)}
+.err{color:var(--undelivered);font-weight:700;font-size:13px}
+.hint{color:var(--muted);font-weight:600;font-size:13px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form-bar{position:sticky;bottom:0;display:grid;grid-template-columns:1fr 2fr;gap:10px;padding:14px 0 calc(14px + var(--safe-b));background:linear-gradient(rgba(10,18,40,0),var(--bg) 35%)}
+.form-bar .btn{background:#fff;color:var(--bg)}
+.form-bar .btn-ghost{background:var(--bg-3);color:#fff}
+.form-bar .btn:disabled{opacity:.55}
+
+/* status actions */
+.btn-ok{background:var(--completed);color:#fff}
+.btn-bad{background:#fde8e6;color:var(--undelivered)}
+.btn-blue{background:#e4ecfd;color:var(--rescheduled)}
+.act-sum{background:var(--bg-2);border-radius:18px;padding:14px 16px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.act-cust{font-weight:800;font-size:18px;color:#fff;line-height:1.25}
+.act-meta{color:#9fb0d6;font-size:14px;font-weight:600}
+.sig{width:100%;height:170px;border:1.5px solid #cfd6e6;border-radius:14px;background:#fff;touch-action:none;display:block}
+.check{display:flex;align-items:center;gap:12px;font-weight:700;min-height:48px}
+.check input{width:24px;height:24px;flex:none}
+
+/* delivery history */
+.hist{margin-top:24px}
+.hist h3{font-size:16px;font-weight:800;margin-bottom:12px}
+.hist ol{list-style:none;margin:0;padding:0 0 0 16px;border-left:2px solid var(--line);display:grid;gap:18px}
+.hist li{position:relative}
+.hist li::before{content:'';position:absolute;left:-23px;top:6px;width:10px;height:10px;border-radius:50%;background:var(--ink)}
+.h-top{display:flex;justify-content:space-between;gap:10px;font-weight:800}
+.h-top span{font-weight:600;color:var(--muted);font-size:13px;text-align:right}
+.h-line{font-size:14px;color:#334155;margin-top:2px;overflow-wrap:anywhere;white-space:pre-wrap}
+.h-by{font-size:13px;color:var(--muted)}
+.hist .muted{color:var(--muted)}
+.sheet-panel .btn-row{display:grid;gap:10px;margin-top:22px}
+.sheet-panel .btn-row .btn{margin-top:0}
+.sheet-panel .btn-row .btn-ghost{background:var(--soft);color:var(--ink)}
+
+/* files and photos */
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.filebtn{display:inline-grid;place-items:center;cursor:pointer;width:100%}
+.fld .filebtn{font-size:16px}
+.sel-list{display:grid;gap:8px}
+.sel-item{display:grid;grid-template-columns:56px 1fr auto;gap:12px;align-items:center;background:var(--soft);border-radius:14px;padding:8px}
+.sel-item img,.sel-item .pdfbox{width:56px;height:56px;border-radius:10px;object-fit:cover;background:#dfe5f1;display:grid;place-items:center;font-weight:800;color:var(--muted);font-size:13px}
+.sel-item b{display:block;font-size:14px;overflow-wrap:anywhere}
+.sel-item small{color:var(--muted);font-weight:600}
+.sel-item .icon-btn{width:40px;height:40px;background:#fff}
+.sel-item .icon-btn svg,.lb-top .icon-btn svg{stroke:var(--ink)}
+.progress{height:10px;border-radius:6px;background:var(--bg-3);overflow:hidden;margin-top:6px}
+.progress .bar{height:100%;width:0;background:#fff;transition:width .25s}
+.up-text{margin:6px 0 0;color:#c9d5f2}
+.sheet-panel .progress{background:var(--soft)}
+.sheet-panel .progress .bar{background:var(--ink)}
+.photos{margin-top:24px}
+.photos h3{font-size:16px;font-weight:800;margin-bottom:6px}
+.pg-title{font-size:13px;font-weight:700;color:var(--muted);margin:12px 0 6px}
+.thumbs{display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:8px}
+.thumb{aspect-ratio:1;border-radius:14px;overflow:hidden;background:var(--soft);display:grid;place-items:center;padding:0;color:var(--muted);font-weight:800;font-size:13px}
+.thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.addbar{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
+.addbar select{min-height:44px;border-radius:12px;border:1.5px solid #cfd6e6;background:#fff;color:var(--ink);padding:0 10px;font-weight:600}
+.addbar .filebtn{margin:0}
+.photos .muted{color:var(--muted)}
+
+/* file viewer */
+.lightbox{position:fixed;inset:0;z-index:70;background:#050a18;display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0px)}
+.lb-top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 14px;color:#fff}
+.lb-top .icon-btn{background:#fff}
+.lb-cap{font-weight:700;font-size:14px;line-height:1.3;overflow-wrap:anywhere}
+.lb-cap small{display:block;color:#9fb0d6;font-weight:600}
+.lb-stage{flex:1;min-height:0;display:grid;place-items:center;padding:8px;color:#c9d5f2;text-align:center}
+.lb-stage img{max-width:100%;max-height:100%;object-fit:contain;border-radius:8px}
+.lb-stage .btn{background:#fff;color:var(--bg);margin-top:14px}
+.lb-nav{display:flex;align-items:center;justify-content:center;gap:20px;padding:10px 14px calc(14px + var(--safe-b))}
+.lb-nav .icon-btn svg{stroke:#fff}
+.lb-count{color:#9fb0d6;font-weight:700;min-width:60px;text-align:center}
+
+/* sign-in and administration */
+body.locked .topbar,body.locked .main,body.locked .nav,body.locked .fab{display:none}
+.splash{min-height:100vh;display:grid;place-content:center;gap:16px;text-align:center;color:#9fb0d6;padding:24px}
+.login{min-height:100vh;display:grid;place-items:center;padding:24px}
+.login-card{background:#fff;color:var(--ink);border-radius:28px;padding:28px 24px;width:100%;max-width:400px;display:grid;gap:14px}
+.login-card h1{font-size:26px;font-weight:800;margin-top:4px}
+.login-card p{color:var(--muted);margin-bottom:4px}
+.login-card .brand-mark{background:var(--bg);color:#fff}
+.login-card .btn{width:100%}
+.login-card .err{margin:0}
+.btn-row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.panel .btn-row2 .btn-ghost{background:var(--soft);color:var(--ink)}
+.emp-list{display:grid;gap:8px;margin-top:14px}
+.emp-row{display:flex;align-items:center;justify-content:space-between;gap:10px;text-align:left;background:var(--soft);border-radius:16px;padding:12px 14px;min-height:60px;color:var(--ink)}
+.emp-row b{display:block}
+.emp-row small{color:var(--muted);font-weight:600}
+.sh-form{display:grid;gap:14px;margin-top:16px}
+.sheet-panel .muted{color:var(--muted)}
+
+/* toast */
+.toast{position:fixed;left:50%;bottom:calc(150px + var(--safe-b));z-index:90;transform:translateX(-50%) translateY(20px);background:#fff;color:var(--ink);padding:12px 18px;border-radius:14px;font-weight:700;box-shadow:0 8px 24px rgba(0,0,0,.4);opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;max-width:90vw;text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%)}
+.toast.error{background:var(--undelivered);color:#fff}
+
+/* larger screens */
+@media (min-width:560px){
+  .sums{grid-template-columns:repeat(3,1fr)}
+  .cards{grid-template-columns:repeat(2,1fr)}
+}
+@media (min-width:900px){
+  .sums{grid-template-columns:repeat(6,1fr)}
+  .cards{grid-template-columns:repeat(3,1fr)}
+  .fgrid{grid-template-columns:repeat(4,1fr)}
+  .nav{top:0;right:auto;width:92px;grid-template-columns:1fr;align-content:start;gap:6px;padding:20px 8px;border-top:0;border-right:1px solid #1d2a52}
+  .topbar,.main{margin-left:92px}
+  .fab{bottom:28px;right:28px}
+  .toast{bottom:28px}
+  .sheet{align-items:center}
+  .sheet-panel{border-radius:28px}
+  .hero{padding:28px 32px}
+}
+@media (prefers-reduced-motion:reduce){
+  .sheet-panel{animation:none}
+  .toast{transition:none}
+}
+
+/* Phase 7: reports */
+.rp-menu{display:grid;gap:10px}
+.rp-item{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;min-height:60px;padding:12px 16px;border-radius:14px;background:var(--soft);color:var(--ink);text-align:left;font-weight:800;border:0}
+.rp-item small{display:block;font-weight:600;color:var(--muted);font-size:13px;margin-top:2px}
+.rp-item .go{font-size:22px;color:var(--muted)}
+.rp-sub{color:var(--muted);font-weight:600}
+.rp-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid #e1e6f2;border-radius:12px}
+.rp-table{border-collapse:collapse;min-width:100%;font-size:13px;color:var(--ink)}
+.rp-table th{background:#0a1228;color:#fff;text-align:left;padding:8px 10px;white-space:nowrap;position:sticky;top:0}
+.rp-table td{padding:8px 10px;border-bottom:1px solid #e9edf6;vertical-align:top;min-width:70px}
+.rp-table tr:nth-child(even) td{background:#f5f7fc}
+.rp-table tr.tot td{font-weight:800;border-top:2px solid #0a1228;background:#fff}
+.panel .btn-row{display:grid;gap:10px;margin-top:8px}
+.panel .btn-row .btn-ghost{background:var(--soft);color:var(--ink)}
+.panel .btn-row2{margin-top:4px}
+.rp-note{color:var(--muted);font-size:13px;font-weight:600}
+</style>
+
+</head>
+<body class="locked">
+
+<div id="splash" class="splash"><div id="splashMsg">Loading...</div><button class="btn" id="splashRetry" data-act="retry" hidden>Try again</button></div>
+
+<section id="view-login" class="login" hidden>
+  <div class="login-card">
+    <div class="brand-mark" aria-hidden="true">V</div>
+    <h1>Vinayak Tiles</h1>
+    <p>Sign in to manage deliveries</p>
+    <div class="fld"><label for="lgMobile">Mobile number</label><input type="tel" id="lgMobile" inputmode="tel" autocomplete="username" maxlength="20"></div>
+    <div class="fld"><label for="lgPin">PIN</label><input type="password" id="lgPin" inputmode="numeric" autocomplete="current-password" maxlength="8"></div>
+    <p class="err" id="lgErr" role="alert" hidden></p>
+    <button class="btn" id="lgBtn" data-act="login">Sign in</button>
+  </div>
+</section>
+
+<header class="topbar">
+  <div class="wrap topbar-in">
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true">V</div>
+      <div>
+        <div class="brand-name">Vinayak Tiles</div>
+        <div class="brand-sub">Delivery management</div>
+      </div>
+    </div>
+    <button class="icon-btn" data-act="refresh" aria-label="Refresh deliveries">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.3-5.7"/><path d="M20 4v5h-5"/></svg>
+    </button>
+  </div>
+  <div class="wrap">
+    <input id="globalSearch" class="search" type="search" enterkeyhint="search"
+           placeholder="Search customer, invoice, mobile or delivery ID" aria-label="Search deliveries">
+  </div>
+</header>
+
+<main class="wrap main">
+
+  <section id="view-dashboard" class="view">
+    <div class="loading">Loading deliveries...</div>
+  </section>
+
+  <section id="view-calendar" class="view" hidden></section>
+
+  <section id="view-deliveries" class="view" hidden>
+    <div class="chips" id="chips"></div>
+    <details class="filters" id="filters">
+      <summary>More filters</summary>
+      <div class="fgrid">
+        <label>From<input type="date" id="fFrom"></label>
+        <label>To<input type="date" id="fTo"></label>
+        <label>Status
+          <select id="fStatus">
+            <option value="">All statuses</option>
+            <option value="PENDING">Pending</option>
+            <option value="COMPLETED">Completed</option>
+            <option value="UNDELIVERED">Undelivered</option>
+            <option value="RESCHEDULED">Rescheduled</option>
+            <option value="OVERDUE">Overdue</option>
+          </select>
+        </label>
+        <label>Employee<select id="fEmp"><option value="">All employees</option></select></label>
+        <label>Customer name<input type="search" id="fCust" autocomplete="off"></label>
+        <label>Invoice number<input type="search" id="fInv" autocomplete="off"></label>
+        <label>Vehicle number<input type="search" id="fVeh" autocomplete="off"></label>
+        <label>Sort by date
+          <select id="fSort">
+            <option value="asc">Earliest first</option>
+            <option value="desc">Latest first</option>
+          </select>
+        </label>
+      </div>
+      <button class="btn btn-ghost" data-act="clear-filters">Clear filters</button>
+    </details>
+    <div id="listInfo" class="list-info"></div>
+    <div id="listBody" class="cards"></div>
+    <button id="loadMore" class="btn btn-wide" data-act="more" hidden>Show more deliveries</button>
+  </section>
+
+  <section id="view-reports" class="view" hidden>
+    <div id="reportsBody"></div>
+  </section>
+
+  <section id="view-more" class="view" hidden>
+    <div id="moreBody"></div>
+  </section>
+
+  <section id="view-action" class="view" hidden></section>
+
+  <section id="view-form" class="view" hidden>
+    <form id="deliveryForm" novalidate autocomplete="off">
+      <div class="form-head">
+        <button type="button" class="icon-btn" data-act="form-cancel" aria-label="Back">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+        </button>
+        <h1 id="formTitle">New delivery</h1>
+      </div>
+      <p class="form-info" id="formInfo"></p>
+
+      <div class="form-card">
+        <h2>Delivery</h2>
+        <div class="row2">
+          <div class="fld"><label for="fdSched">Delivery date</label><input type="date" id="fdSched"><small class="err" hidden></small></div>
+          <div class="fld"><label for="fdTime">Expected time <span class="opt">(optional)</span></label><input type="time" id="fdTime"><small class="err" hidden></small></div>
+        </div>
+        <small class="hint" id="schedHint" hidden>To change the date, use Reschedule (coming in Phase 5).</small>
+        <div class="fld"><label for="fdEmp">Delivery employee</label><select id="fdEmp"><option value="">Select employee</option></select>
+          <small class="hint" id="empHint" hidden>No active employees yet. Add names to the Employees sheet (ActiveStatus = ACTIVE).</small><small class="err" hidden></small></div>
+      </div>
+
+      <div class="form-card">
+        <h2>Customer</h2>
+        <div class="fld"><label for="fdCust">Customer name</label><input type="text" id="fdCust" maxlength="120"><small class="err" hidden></small></div>
+        <div class="fld"><label for="fdMobile">Mobile number</label><input type="tel" inputmode="tel" id="fdMobile" maxlength="20"><small class="err" hidden></small></div>
+        <div class="fld"><label for="fdInv">Invoice number</label><input type="text" id="fdInv" maxlength="40"><small class="err" hidden></small></div>
+        <div class="fld"><label for="fdAddr">Delivery address</label><textarea id="fdAddr" maxlength="500"></textarea><small class="err" hidden></small></div>
+      </div>
+
+      <div class="form-card">
+        <h2>Material</h2>
+        <div class="fld"><label for="fdMat">Material description</label><textarea id="fdMat" maxlength="500" placeholder="Tiles, sanitaryware or other material"></textarea><small class="err" hidden></small></div>
+        <div class="row2">
+          <div class="fld"><label for="fdQty">Quantity</label><input type="number" inputmode="decimal" step="any" min="0" id="fdQty"><small class="err" hidden></small></div>
+          <div class="fld"><label for="fdUnit">Unit</label><select id="fdUnit"></select><small class="err" hidden></small></div>
+        </div>
+      </div>
+
+      <div class="form-card">
+        <h2>Vehicle and notes</h2>
+        <div class="row2">
+          <div class="fld"><label for="fdVeh">Vehicle number <span class="opt">(optional)</span></label><input type="text" id="fdVeh" maxlength="20" autocapitalize="characters"><small class="err" hidden></small></div>
+          <div class="fld"><label for="fdDriver">Driver name <span class="opt">(optional)</span></label><input type="text" id="fdDriver" maxlength="80"><small class="err" hidden></small></div>
+        </div>
+        <div class="fld"><label for="fdInstr">Delivery instructions <span class="opt">(optional)</span></label><textarea id="fdInstr" maxlength="1000"></textarea><small class="err" hidden></small></div>
+        <div class="fld" id="remarksFld"><label for="fdRemarks">Remarks <span class="opt">(optional)</span></label><textarea id="fdRemarks" maxlength="1000"></textarea><small class="err" hidden></small></div>
+      </div>
+
+      <div class="form-card" id="uploadCard">
+        <h2>Photos and documents</h2>
+        <div class="fld">
+          <label>Material photos <span class="opt">(optional)</span></label>
+          <label class="btn btn-ghost filebtn" for="fdPhotos">Add photos</label>
+          <input type="file" id="fdPhotos" class="sr" accept="image/*" multiple>
+          <small class="hint">Take a photo or choose from your gallery.</small>
+          <div id="photoList" class="sel-list"></div>
+        </div>
+        <div class="fld">
+          <label>Invoice image or document <span class="opt">(optional)</span></label>
+          <label class="btn btn-ghost filebtn" for="fdInvoice">Add invoice</label>
+          <input type="file" id="fdInvoice" class="sr" accept="image/*,application/pdf">
+          <div id="invoiceList" class="sel-list"></div>
+        </div>
+      </div>
+
+      <div class="progress" id="upProgress" hidden><div class="bar" id="upBar"></div></div>
+      <p class="hint up-text" id="upText" hidden></p>
+
+      <div class="form-bar">
+        <button type="button" class="btn btn-ghost" data-act="form-cancel">Cancel</button>
+        <button type="submit" class="btn" id="btnSave" disabled>Save delivery</button>
+      </div>
+    </form>
+  </section>
+
+</main>
+
+<button class="fab" data-act="fab" aria-label="New delivery">
+  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+</button>
+
+<nav class="nav" aria-label="Main">
+  <button data-view="dashboard" aria-current="page">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="8" rx="2"/><rect x="14" y="3" width="7" height="5" rx="2"/><rect x="14" y="12" width="7" height="9" rx="2"/><rect x="3" y="15" width="7" height="6" rx="2"/></svg>
+    <span>Dashboard</span>
+  </button>
+  <button data-view="calendar">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
+    <span>Calendar</span>
+  </button>
+  <button data-view="deliveries">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
+    <span>Deliveries</span>
+  </button>
+  <button data-view="reports">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20V10M12 20V4M19 20v-7"/></svg>
+    <span>Reports</span>
+  </button>
+  <button data-view="more">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>
+    <span>More</span>
+  </button>
+</nav>
+
+<div id="sheet" class="sheet" hidden>
+  <div class="sheet-back" data-act="close-sheet"></div>
+  <div class="sheet-panel" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+    <div class="sheet-grip" aria-hidden="true"></div>
+    <div id="sheetBody"></div>
+  </div>
+</div>
+
+<div id="lightbox" class="lightbox" hidden role="dialog" aria-modal="true" aria-label="File viewer">
+  <div class="lb-top">
+    <div id="lbCap" class="lb-cap"></div>
+    <button class="icon-btn" data-act="lb-close" aria-label="Close viewer">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
+  </div>
+  <div id="lbStage" class="lb-stage"></div>
+  <div class="lb-nav">
+    <button class="icon-btn" data-act="lb-prev" aria-label="Previous file"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
+    <span id="lbCount" class="lb-count"></span>
+    <button class="icon-btn" data-act="lb-next" aria-label="Next file"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button>
+  </div>
+</div>
+
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+<script src="config.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  var MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  var DAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  var WEEK_SHORT = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  var LABEL = {PENDING:'Pending', COMPLETED:'Completed', UNDELIVERED:'Undelivered', RESCHEDULED:'Rescheduled', OVERDUE:'Overdue'};
+  var DOT_ORDER = ['OVERDUE','UNDELIVERED','PENDING','RESCHEDULED','COMPLETED'];
+  var CHIPS = [['upcoming','Upcoming'],['today','Today'],['tomorrow','Tomorrow'],['week','Next 7 days'],['overdue','Overdue'],['all','All']];
+
+  var S = {
+    boot: null, dash: null, dashAt: 0, view: 'dashboard',
+    cal: {mode: 'month', sel: null}, calCache: {},
+    f: blankF(), chip: 'upcoming',
+    list: {items: [], total: 0, offset: 0, req: 0, loaded: false},
+    byId: {}, openId: null,
+    token: '', me: null, emps: [], settingsDefs: [],
+    up: {opts: null}, imgList: {}, thumbs: {}, full: {}, fullKeys: [], lb: {list: [], idx: 0}
+  };
+
+  /* ---------- small helpers ---------- */
+  function $(s, el) { return (el || document).querySelector(s); }
+  function pad(n) { return (n < 10 ? '0' : '') + n; }
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+    });
+  }
+  function blankF() { return {from:'', to:'', status:'', employee:'', customer:'', invoice:'', vehicle:'', query:'', sort:'asc'}; }
+
+  function pd(s) { var p = s.split('-'); return new Date(+p[0], +p[1] - 1, +p[2]); }
+  function fmt(d) { return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
+  function add(s, n) { var d = pd(s); d.setDate(d.getDate() + n); return fmt(d); }
+  function niceDate(s) {
+    if (!s) return '';
+    var d = pd(s);
+    return DAYS[d.getDay()].slice(0, 3) + ', ' + pad(d.getDate()) + ' ' + MONTHS[d.getMonth()].slice(0, 3);
+  }
+  function longDate(s) {
+    if (!s) return '';
+    var d = pd(s);
+    return DAYS[d.getDay()] + ', ' + pad(d.getDate()) + ' ' + MONTHS[d.getMonth()];
+  }
+  function weekStart(s) { var d = pd(s); d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); return fmt(d); }
+  function time12(t) {
+    if (!t) return '';
+    var p = t.split(':'), h = +p[0];
+    return ((h % 12) || 12) + ':' + p[1] + ' ' + (h < 12 ? 'AM' : 'PM');
+  }
+  function qtyText(d) {
+    return [d.Quantity, d.QuantityUnit].filter(function (x) { return x !== '' && x != null; }).join(' ');
+  }
+  function dispStatus(d) { return d.IsOverdue ? 'OVERDUE' : d.Status; }
+  function register(items) { items.forEach(function (d) { S.byId[d.DeliveryID] = d; }); }
+
+  /* Works in both places: inside Apps Script (google.script.run) and on GitHub Pages (web request). */
+  var HAS_GAS = typeof google !== 'undefined' && google.script && google.script.run;
+  function rpc(name, args) {
+    if (HAS_GAS) {
+      return new Promise(function (resolve, reject) {
+        var r = google.script.run.withSuccessHandler(resolve).withFailureHandler(reject);
+        r[name].apply(r, args);
+      });
+    }
+    var url = window.VINAYAK_API_URL || '';
+    if (!/^https:\/\/script\.google\.com\/macros\/s\/.+\/exec$/.test(url)) {
+      return Promise.reject(new Error('The app address is not set up yet. Check the config.js file.'));
+    }
+    return fetch(url, {
+      method: 'POST',
+      headers: {'Content-Type': 'text/plain;charset=utf-8'},
+      body: JSON.stringify({fn: name, args: args})
+    }).then(function (res) {
+      return res.json();
+    }, function () {
+      throw new Error('Could not reach the server. Check your internet and try again.');
+    }).then(function (j) {
+      if (!j || typeof j.ok === 'undefined') throw new Error('The server did not answer properly. Please try again.');
+      if (!j.ok) throw new Error(j.error || 'Something went wrong.');
+      return j.data;
+    }, function (e) {
+      if (e && e.message && !/JSON|Unexpected/.test(e.message)) throw e;
+      throw new Error('The server did not answer properly. Please try again.');
+    });
+  }
+  function api(fn) {
+    var args = Array.prototype.slice.call(arguments, 1);
+    return rpc('callApi', [S.token, fn, args]).catch(function (e) {
+      if (isExpired(e)) showLogin('Your session ended. Please sign in again.');
+      throw e;
+    });
+  }
+  var toastTimer;
+  function toast(msg, kind) {
+    var t = $('#toast');
+    t.textContent = msg;
+    t.className = 'toast show' + (kind === 'error' ? ' error' : '');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { t.className = 'toast'; }, 4000);
+  }
+  function fail(e) {
+    if (isExpired(e)) return;
+    toast((e && e.message) ? String(e.message).replace(/^Error:\s*/, '') : 'Something went wrong. Check your connection and try again.', 'error');
+  }
+
+  /* ---------- delivery card ---------- */
+  function pill(st) { return '<span class="pill st-' + st.toLowerCase() + '">' + LABEL[st] + '</span>'; }
+
+  function cardHtml(d, showDate) {
+    var st = dispStatus(d);
+    var t = d.ExpectedDeliveryTime ? time12(d.ExpectedDeliveryTime) : 'Any time';
+    var q = qtyText(d);
+    return '<article class="dcard st-' + st.toLowerCase() + '" data-id="' + esc(d.DeliveryID) + '">' +
+      '<div class="dc-top"><div class="dc-time">' + esc(t) +
+        (showDate ? '<small>' + esc(niceDate(d.CurrentScheduledDate)) + '</small>' : '') + '</div>' + pill(st) + '</div>' +
+      '<h3 class="dc-cust">' + esc(d.CustomerName || 'Unnamed customer') + '</h3>' +
+      '<dl class="dc-kv">' +
+        '<div><dt>Invoice</dt><dd>' + esc(d.InvoiceNumber || '-') + '</dd></div>' +
+        '<div><dt>Employee</dt><dd>' + esc(d.DeliveryEmployee || 'Not assigned') + '</dd></div>' +
+        (d.MaterialDescription ? '<div class="wide"><dt>Material</dt><dd>' + esc(d.MaterialDescription) + (q ? ' (' + esc(q) + ')' : '') + '</dd></div>' : '') +
+      '</dl>' +
+      (d.IsRescheduled && d.Status !== 'COMPLETED' ? '<div class="dc-note">Moved from ' + esc(niceDate(d.OriginalScheduledDate)) + '</div>' : '') +
+      '<div class="dc-actions"><button class="btn btn-ghost" data-act="view">View details</button>' +
+        (d.Status !== 'COMPLETED' && P().complete ? '<button class="btn btn-ok" data-act="wf" data-kind="complete" data-id="' + esc(d.DeliveryID) + '">Complete</button>' : '') +
+        (d.Status !== 'COMPLETED' && P().reschedule ? '<button class="btn btn-blue" data-act="wf" data-kind="reschedule" data-id="' + esc(d.DeliveryID) + '">Reschedule</button>' : '') +
+      '</div></article>';
+  }
+  function cardsHtml(items, showDate, emptyMsg) {
+    if (!items.length) return '<div class="empty">' + esc(emptyMsg) + '</div>';
+    register(items);
+    return '<div class="cards">' + items.map(function (d) { return cardHtml(d, showDate); }).join('') + '</div>';
+  }
+
+  /* ---------- views ---------- */
+  function showView(name, noLoad) {
+    S.view = name;
+    ['dashboard','calendar','deliveries','reports','more','form','action'].forEach(function (v) {
+      $('#view-' + v).hidden = (v !== name);
+    });
+    document.body.classList.toggle('in-form', name === 'form' || name === 'action');
+    var btns = document.querySelectorAll('.nav button');
+    for (var i = 0; i < btns.length; i++) {
+      if (btns[i].getAttribute('data-view') === name) btns[i].setAttribute('aria-current', 'page');
+      else btns[i].removeAttribute('aria-current');
+    }
+    window.scrollTo(0, 0);
+    if (noLoad) return;
+    if (name === 'dashboard' && Date.now() - S.dashAt > 60000) loadDashboard();
+    if (name === 'calendar') loadCalendar();
+    if (name === 'reports') renderReports();
+    if (name === 'deliveries' && !S.list.loaded) { renderChips(); loadList(true); }
+  }
+
+  /* ---------- dashboard ---------- */
+  function loadDashboard() {
+    return api('getDashboard').then(function (d) {
+      S.dash = d; S.dashAt = Date.now();
+      S.boot.today = d.today;
+      renderDashboard();
+    }).catch(fail);
+  }
+
+  function section(title, count, body, seeAll) {
+    return '<section class="sec"><div class="sec-head"><h2>' + esc(title) + '</h2>' +
+      (seeAll || '<span class="count">' + count + '</span>') + '</div>' + body + '</section>';
+  }
+
+  function renderDashboard() {
+    var d = S.dash, s = d.summary, dt = pd(d.today);
+    var nextP = d.todayList.filter(function (x) { return x.Status === 'PENDING' || x.Status === 'RESCHEDULED'; })[0];
+    var side;
+    if (nextP) {
+      side = '<div class="hero-next-label">Next delivery</div><div class="hero-next">' +
+        esc(nextP.ExpectedDeliveryTime ? time12(nextP.ExpectedDeliveryTime) : 'Any time') +
+        '<small>' + esc(nextP.CustomerName) + '</small></div>';
+    } else {
+      side = '<div class="hero-next-label">' + (s.total ? 'Nothing left to deliver today' : 'No deliveries scheduled today') + '</div>';
+    }
+    var cards = [
+      ['Total today', s.total, '#94a3b8', 'today', ''],
+      ['Pending', s.pending, 'var(--pending)', 'today', 'PENDING'],
+      ['Completed', s.completed, 'var(--completed)', 'today', 'COMPLETED'],
+      ['Undelivered', s.undelivered, 'var(--undelivered)', 'today', 'UNDELIVERED'],
+      ['Rescheduled', s.rescheduled, 'var(--rescheduled)', 'today', 'RESCHEDULED'],
+      ['Overdue', s.overdue, 'var(--overdue)', 'overdue', '']
+    ];
+    var html =
+      '<div class="hero"><div><div class="hero-day">' + DAYS[dt.getDay()] + '</div>' +
+        '<div class="hero-num">' + dt.getDate() + '</div>' +
+        '<div class="hero-month">' + MONTHS[dt.getMonth()] + ' ' + dt.getFullYear() + '</div></div>' +
+        '<div class="hero-side"><div class="hero-count">' + s.total + (s.total === 1 ? ' delivery today' : ' deliveries today') + '</div>' + side + '</div></div>' +
+      '<div class="sums">' + cards.map(function (c) {
+        return '<button class="sum" data-act="preset" data-preset="' + c[3] + '" data-status="' + c[4] + '">' +
+          '<b>' + c[1] + '</b><span><i class="dot" style="--c:' + c[2] + '"></i>' + c[0] + '</span></button>';
+      }).join('') + '</div>';
+
+    if (d.overdue.length) {
+      html += section('Overdue, needs follow-up', s.overdue,
+        cardsHtml(d.overdue, true, ''),
+        s.overdue > d.overdue.length ? '<button class="link" data-act="preset" data-preset="overdue" data-status="">See all ' + s.overdue + '</button>' : '');
+    }
+    html += section("Today's deliveries", d.todayList.length, cardsHtml(d.todayList, false, 'No deliveries scheduled for today.'));
+    html += section("Tomorrow's deliveries", d.tomorrowList.length, cardsHtml(d.tomorrowList, false, 'No deliveries scheduled for tomorrow.'));
+    html += section('Upcoming, next 7 days', d.upcoming.length, cardsHtml(d.upcoming, true, 'Nothing scheduled in the next 7 days.'));
+    $('#view-dashboard').innerHTML = html;
+  }
+
+  /* ---------- calendar ---------- */
+  function calRange() {
+    var m = S.cal.mode, sel = S.cal.sel;
+    if (m === 'month') { var gs = weekStart(sel.slice(0, 8) + '01'); return {from: gs, to: add(gs, 41)}; }
+    if (m === 'week') { var ws = weekStart(sel); return {from: ws, to: add(ws, 6)}; }
+    return {from: sel, to: sel};
+  }
+  function calTitle() {
+    var sel = S.cal.sel, m = S.cal.mode;
+    if (m === 'month') { var d = pd(sel); return MONTHS[d.getMonth()] + ' ' + d.getFullYear(); }
+    if (m === 'week') { var r = calRange(); return pad(pd(r.from).getDate()) + ' ' + MONTHS[pd(r.from).getMonth()].slice(0, 3) + ' to ' + pad(pd(r.to).getDate()) + ' ' + MONTHS[pd(r.to).getMonth()].slice(0, 3); }
+    return longDate(sel);
+  }
+  function countByDate(items) {
+    var map = {};
+    items.forEach(function (d) {
+      var c = map[d.CurrentScheduledDate] || (map[d.CurrentScheduledDate] = {n: 0, st: {}});
+      c.n++; c.st[dispStatus(d)] = true;
+    });
+    return map;
+  }
+  function dotsHtml(c) {
+    if (!c) return '<span class="dots"></span>';
+    var out = DOT_ORDER.filter(function (k) { return c.st[k]; }).slice(0, 3).map(function (k) {
+      return '<i class="st-' + k.toLowerCase() + '"></i>';
+    }).join('');
+    return '<span class="dots">' + out + '</span>';
+  }
+
+  function loadCalendar() {
+    renderCalendar();
+    var r = calRange(), key = r.from + '|' + r.to;
+    if (S.calCache[key]) return;
+    api('getDeliveryRange', r.from, r.to).then(function (res) {
+      register(res.items);
+      S.calCache[key] = res.items;
+      var cur = calRange();
+      if (S.view === 'calendar' && cur.from + '|' + cur.to === key) renderCalendar();
+    }).catch(fail);
+  }
+
+  function renderCalendar() {
+    var r = calRange(), items = S.calCache[r.from + '|' + r.to];
+    var today = S.boot.today, sel = S.cal.sel, mode = S.cal.mode;
+    var arrow = function (dir) {
+      return '<button class="icon-btn" data-act="cal-' + dir + '" aria-label="' + (dir === 'prev' ? 'Previous' : 'Next') + '"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="' + (dir === 'prev' ? 'M15 5l-7 7 7 7' : 'M9 5l7 7-7 7') + '"/></svg></button>';
+    };
+    var html = '<div class="cal-bar"><div class="seg">' +
+      ['day','week','month'].map(function (m) {
+        return '<button data-act="cal-mode" data-mode="' + m + '" aria-pressed="' + (m === mode) + '">' + m.charAt(0).toUpperCase() + m.slice(1) + '</button>';
+      }).join('') + '</div>' +
+      '<div class="cal-nav">' + arrow('prev') + '<div class="cal-title">' + esc(calTitle()) + '</div>' + arrow('next') +
+      '<button class="cal-today" data-act="cal-today">Today</button></div></div>';
+
+    var counts = countByDate(items || []);
+    if (mode === 'month') {
+      var first = sel.slice(0, 8) + '01', gs = weekStart(first);
+      html += '<div class="cal-card"><div class="mg-head">' + WEEK_SHORT.map(function (w) { return '<span>' + w + '</span>'; }).join('') + '</div><div class="mg">';
+      for (var i = 0; i < 42; i++) {
+        var day = add(gs, i), c = counts[day];
+        var cls = (day.slice(0, 7) !== first.slice(0, 7) ? ' other' : '') + (day === today ? ' today' : '') + (day === sel ? ' sel' : '');
+        html += '<button class="' + cls.trim() + '" data-act="cal-pick" data-date="' + day + '" aria-label="' + esc(longDate(day)) + (c ? ', ' + c.n + ' deliveries' : '') + '">' +
+          (c ? '<span class="n">' + c.n + '</span>' : '') +
+          '<span class="num">' + pd(day).getDate() + '</span>' + dotsHtml(c) + '</button>';
+      }
+      html += '</div></div>';
+    } else if (mode === 'week') {
+      var ws = weekStart(sel);
+      html += '<div class="cal-card"><div class="wk">';
+      for (var j = 0; j < 7; j++) {
+        var dd = add(ws, j), cc = counts[dd];
+        html += '<button class="' + ((dd === today ? 'today ' : '') + (dd === sel ? 'sel' : '')).trim() + '" data-act="cal-pick" data-date="' + dd + '">' +
+          '<small>' + WEEK_SHORT[j] + '</small><span class="num">' + pd(dd).getDate() + '</span>' +
+          '<span class="n">' + (cc ? cc.n : '') + '</span></button>';
+      }
+      html += '</div></div>';
+    }
+
+    if (!items) {
+      html += '<div class="loading">Loading deliveries...</div>';
+    } else if (mode === 'week') {
+      var any = false;
+      for (var k = 0; k < 7; k++) {
+        var wd = add(weekStart(sel), k);
+        var list = items.filter(function (x) { return x.CurrentScheduledDate === wd; });
+        if (!list.length) continue;
+        any = true;
+        html += '<div class="day-head">' + esc(longDate(wd)) + '<span>' + list.length + '</span></div>' + cardsHtml(list, false, '');
+      }
+      if (!any) html += '<div class="empty" style="margin-top:14px">No deliveries this week.</div>';
+    } else {
+      var dayItems = items.filter(function (x) { return x.CurrentScheduledDate === sel; });
+      html += '<div class="day-head">' + esc(longDate(sel)) + '<span>' + dayItems.length + (dayItems.length === 1 ? ' delivery' : ' deliveries') + '</span></div>' +
+        cardsHtml(dayItems, false, 'No deliveries on this date.');
+    }
+    $('#view-calendar').innerHTML = html;
+  }
+
+  function shiftMonth(n) {
+    var d = pd(S.cal.sel.slice(0, 8) + '01');
+    d.setMonth(d.getMonth() + n);
+    var f = fmt(d);
+    S.cal.sel = (f.slice(0, 7) === S.boot.today.slice(0, 7)) ? S.boot.today : f;
+  }
+  function calStep(n) {
+    if (S.cal.mode === 'month') shiftMonth(n);
+    else S.cal.sel = add(S.cal.sel, n * (S.cal.mode === 'week' ? 7 : 1));
+    loadCalendar();
+  }
+
+  /* ---------- deliveries list ---------- */
+  function renderChips() {
+    $('#chips').innerHTML = CHIPS.map(function (c) {
+      return '<button class="chip" data-act="preset" data-preset="' + c[0] + '" data-status="" aria-pressed="' + (S.chip === c[0]) + '">' + c[1] + '</button>';
+    }).join('');
+  }
+  function syncInputs() {
+    var f = S.f;
+    $('#fFrom').value = f.from; $('#fTo').value = f.to; $('#fStatus').value = f.status;
+    $('#fEmp').value = f.employee; $('#fCust').value = f.customer; $('#fInv').value = f.invoice;
+    $('#fVeh').value = f.vehicle; $('#fSort').value = f.sort;
+  }
+  function readInputs() {
+    S.f.from = $('#fFrom').value; S.f.to = $('#fTo').value; S.f.status = $('#fStatus').value;
+    S.f.employee = $('#fEmp').value; S.f.customer = $('#fCust').value.trim(); S.f.invoice = $('#fInv').value.trim();
+    S.f.vehicle = $('#fVeh').value.trim(); S.f.sort = $('#fSort').value;
+    S.chip = 'custom'; renderChips(); loadList(true);
+  }
+  function setFilters(partial, chip) {
+    S.f = Object.assign(blankF(), partial);
+    S.chip = chip; syncInputs(); renderChips(); loadList(true);
+  }
+  function preset(id, status) {
+    var t = S.boot.today, f = {};
+    if (id === 'upcoming') f.from = t;
+    else if (id === 'today') { f.from = t; f.to = t; }
+    else if (id === 'tomorrow') { f.from = add(t, 1); f.to = add(t, 1); }
+    else if (id === 'week') { f.from = t; f.to = add(t, 6); }
+    else if (id === 'overdue') f.status = 'OVERDUE';
+    if (status) f.status = status;
+    setFilters(f, status ? 'custom' : id);
+  }
+
+  function loadList(reset) {
+    var L = S.list;
+    if (reset) { L.items = []; L.offset = 0; L.total = 0; $('#listBody').innerHTML = '<div class="loading">Loading deliveries...</div>'; $('#loadMore').hidden = true; }
+    var token = ++L.req;
+    L.loaded = true;
+    var p = Object.assign({}, S.f, {offset: L.offset, limit: 30});
+    api('searchDeliveries', p).then(function (res) {
+      if (token !== L.req) return;
+      register(res.items);
+      L.items = L.items.concat(res.items);
+      L.offset = L.items.length; L.total = res.total;
+      renderList();
+    }).catch(function (e) { if (token === L.req) { $('#listBody').innerHTML = ''; fail(e); } });
+  }
+  function renderList() {
+    var L = S.list;
+    $('#listInfo').textContent = L.total ? 'Showing ' + L.items.length + ' of ' + L.total + (L.total === 1 ? ' delivery' : ' deliveries') : '';
+    $('#listBody').innerHTML = L.items.length
+      ? L.items.map(function (d) { return cardHtml(d, true); }).join('')
+      : '<div class="empty" style="grid-column:1/-1">No deliveries match these filters.</div>';
+    $('#loadMore').hidden = L.items.length >= L.total;
+  }
+
+  /* ---------- files: preparing, uploading, viewing ---------- */
+  var TYPE_LABEL = {DELIVERY:'Material photos', INVOICE:'Invoice or document', PROOF:'Delivery proof', UNDELIVERED:'Undelivered evidence', OTHER:'Other'};
+  var TYPE_ORDER = ['DELIVERY','INVOICE','PROOF','UNDELIVERED','OTHER'];
+  var CLOSE_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+
+  function maxMB() { return (S.up.opts && S.up.opts.maxMB) || 5; }
+  function sizeText(n) { return n >= 1048576 ? (n / 1048576).toFixed(1) + ' MB' : Math.max(1, Math.round(n / 1024)) + ' KB'; }
+  function baseName(n) { return String(n || 'photo').replace(/\.[^.]*$/, '') || 'photo'; }
+
+  // Photos are shrunk on the phone before upload (faster, and well under the size limit)
+  function prepareFile(file) {
+    var maxBytes = maxMB() * 1048576;
+    return new Promise(function (resolve, reject) {
+      if (file.type && file.type !== 'application/pdf' && !/^image\//.test(file.type)) {
+        reject(new Error(file.name + ' is not a photo or PDF.')); return;
+      }
+      if (file.type === 'application/pdf') {
+        if (file.size > maxBytes) { reject(new Error(file.name + ' is larger than ' + maxMB() + ' MB.')); return; }
+        var fr = new FileReader();
+        fr.onload = function () { resolve({id: newRequestId(), name: file.name, mime: 'application/pdf', b64: String(fr.result).split(',')[1], size: file.size, thumb: ''}); };
+        fr.onerror = function () { reject(new Error(file.name + ' could not be read.')); };
+        fr.readAsDataURL(file);
+        return;
+      }
+      var url = URL.createObjectURL(file), img = new Image();
+      img.onload = function () {
+        var w = img.naturalWidth, h = img.naturalHeight;
+        if (!w || !h) { URL.revokeObjectURL(url); reject(new Error(file.name + ' could not be opened.')); return; }
+        var sc = Math.min(1, 1800 / Math.max(w, h));
+        var c = document.createElement('canvas');
+        c.width = Math.round(w * sc); c.height = Math.round(h * sc);
+        var ctx = c.getContext('2d');
+        ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, c.width, c.height);
+        ctx.drawImage(img, 0, 0, c.width, c.height);
+        var b64 = c.toDataURL('image/jpeg', 0.82).split(',')[1];
+        var size = Math.floor(b64.length * 3 / 4);
+        var t = document.createElement('canvas'), ts = Math.min(1, 160 / Math.max(c.width, c.height));
+        t.width = Math.max(1, Math.round(c.width * ts)); t.height = Math.max(1, Math.round(c.height * ts));
+        t.getContext('2d').drawImage(c, 0, 0, t.width, t.height);
+        URL.revokeObjectURL(url);
+        if (size > maxBytes) { reject(new Error(file.name + ' is larger than ' + maxMB() + ' MB even after shrinking.')); return; }
+        resolve({id: newRequestId(), name: baseName(file.name) + '.jpg', mime: 'image/jpeg', b64: b64, size: size, thumb: t.toDataURL('image/jpeg', 0.7)});
+      };
+      img.onerror = function () { URL.revokeObjectURL(url); reject(new Error(file.name + ' could not be opened. Use a JPG or PNG photo.')); };
+      img.src = url;
+    });
+  }
+
+  function prepareMany(files) {
+    var ok = [], errors = [], chain = Promise.resolve();
+    Array.prototype.forEach.call(files, function (f) {
+      chain = chain.then(function () {
+        return prepareFile(f).then(function (x) { ok.push(x); }, function (e) { errors.push(e.message); });
+      });
+    });
+    return chain.then(function () { return {ok: ok, errors: errors}; });
+  }
+
+  function uploadOne(it, deliveryId, context) {
+    var go = function () { return api('uploadDeliveryFile', deliveryId, it.type, it.name, it.mime, it.b64, '', it.id, context); };
+    // one automatic retry; the upload ID makes a retry safe (no duplicates)
+    return go().catch(function () { return new Promise(function (r) { setTimeout(r, 1200); }).then(go); });
+  }
+
+  function uploadBatch(deliveryId, items, context, onProgress) {
+    var done = 0, failed = [], chain = Promise.resolve();
+    items.forEach(function (it) {
+      chain = chain.then(function () {
+        onProgress(done, items.length);
+        return uploadOne(it, deliveryId, context).then(
+          function () { done++; },
+          function (e) { failed.push({name: it.name, message: (e && e.message) || 'Upload failed'}); done++; });
+      });
+    });
+    return chain.then(function () { onProgress(items.length, items.length); return {failed: failed}; });
+  }
+
+  function showFormProgress(done, total) {
+    $('#upProgress').hidden = false; $('#upText').hidden = false;
+    $('#upBar').style.width = Math.round(done / total * 100) + '%';
+    $('#upText').textContent = done < total ? 'Uploading file ' + (done + 1) + ' of ' + total + '...' : 'Uploads finished.';
+  }
+  function setSheetProg(done, total, label) {
+    var box = $('#sheetProg'), txt = $('#sheetProgText');
+    if (!box || !txt) return;
+    if (done === null) { box.hidden = true; txt.hidden = true; return; }
+    box.hidden = false; txt.hidden = false;
+    $('#sheetBar').style.width = Math.round(done / total * 100) + '%';
+    txt.textContent = label || (done < total ? 'Uploading file ' + (done + 1) + ' of ' + total + '...' : 'Uploads finished.');
+  }
+
+  function selItem(f, i, act) {
+    return '<div class="sel-item">' + (f.thumb ? '<img alt="" src="' + esc(f.thumb) + '">' : '<div class="pdfbox">PDF</div>') +
+      '<div><b>' + esc(f.name) + '</b><small>' + sizeText(f.size) + '</small></div>' +
+      '<button type="button" class="icon-btn" data-act="' + act + '" data-i="' + i + '" aria-label="Remove ' + esc(f.name) + '">' + CLOSE_SVG + '</button></div>';
+  }
+  function renderSelected() {
+    $('#photoList').innerHTML = FORM.files.photos.map(function (f, i) { return selItem(f, i, 'rm-photo'); }).join('');
+    $('#invoiceList').innerHTML = FORM.files.invoice ? selItem(FORM.files.invoice, 0, 'rm-invoice') : '';
+  }
+  function uploadItems() {
+    var items = FORM.files.photos.map(function (f) { f.type = 'DELIVERY'; return f; });
+    if (FORM.files.invoice) { FORM.files.invoice.type = 'INVOICE'; items.push(FORM.files.invoice); }
+    return items;
+  }
+  function updateSaveBtn() { $('#btnSave').disabled = !FORM.ready || FORM.preparing > 0 || FORM.saving; }
+
+  function handlePick(input, kind) {
+    var files = input.files;
+    if (!files || !files.length) return;
+    FORM.preparing++; updateSaveBtn();
+    prepareMany(files).then(function (r) {
+      if (kind === 'photos') {
+        r.ok.forEach(function (x) {
+          if (FORM.files.photos.length < 10) FORM.files.photos.push(x);
+          else if (r.errors.indexOf('You can add up to 10 photos here. Add more after saving.') === -1) r.errors.push('You can add up to 10 photos here. Add more after saving.');
+        });
+      } else if (r.ok.length) {
+        FORM.files.invoice = r.ok[0];
+      }
+      renderSelected();
+      if (r.errors.length) toast(r.errors[0], 'error');
+    }).then(function () { FORM.preparing = Math.max(0, FORM.preparing - 1); updateSaveBtn(); input.value = ''; });
+  }
+
+  function handleAddFiles(input) {
+    var files = input.files, id = S.openId;
+    if (!files || !files.length || !id) return;
+    var type = ($('#addType') || {}).value || 'OTHER';
+    setSheetProg(0, 1, 'Preparing files...');
+    prepareMany(files).then(function (r) {
+      input.value = '';
+      var items = r.ok, errors = r.errors.slice();
+      if (type === 'DELIVERY') {
+        items = items.filter(function (x) { if (x.mime === 'application/pdf') { errors.push(x.name + ': PDF files can be added as invoice or other documents.'); return false; } return true; });
+      }
+      if (!items.length) { setSheetProg(null); if (errors.length) toast(errors[0], 'error'); return; }
+      items.forEach(function (x) { x.type = type; });
+      return uploadBatch(id, items, 'add', function (d, t) { setSheetProg(d, t); }).then(function (res) {
+        setSheetProg(null);
+        if (res.failed.length) toast(res.failed.length + ' file(s) failed: ' + res.failed[0].message, 'error');
+        else if (errors.length) toast(errors[0], 'error');
+        else toast(items.length + (items.length === 1 ? ' file added.' : ' files added.'));
+        loadDetail(id);
+      });
+    });
+  }
+
+  function thumbBtn(x, delId) {
+    var th = S.thumbs[x.ImageID];
+    var inner = (th && th !== 'none') ? '<img alt="" src="' + th + '">' : (x.IsPdf ? 'PDF' : 'Photo');
+    return '<button class="thumb" data-act="lb-open" data-del="' + esc(delId) + '" data-id="' + esc(x.ImageID) + '" data-thumb="' + esc(x.ImageID) + '" aria-label="Open ' + esc(x.FileName) + '">' + inner + '</button>';
+  }
+  function photosHtml(delId) {
+    if (!P().images) return '';
+    var data = S.imgList[delId];
+    var html = '<div class="photos" id="photoBox"><h3>Photos and documents</h3>';
+    if (!data) html += '<p class="muted">Loading photos...</p>';
+    else if (!data.length) html += '<p class="muted">No photos or documents yet.</p>';
+    else TYPE_ORDER.forEach(function (t) {
+      var group = data.filter(function (x) { return x.ImageType === t; });
+      if (!group.length) return;
+      html += '<div class="pg-title">' + esc(TYPE_LABEL[t]) + '</div><div class="thumbs">' + group.map(function (x) { return thumbBtn(x, delId); }).join('') + '</div>';
+    });
+    var types = P().uploadTypes || [];
+    if (types.length) {
+      html += '<div class="addbar"><select id="addType" aria-label="Type of file to add">' + types.map(function (t) {
+        return '<option value="' + t + '">' + esc(ADD_LABEL[t]) + '</option>';
+      }).join('') + '</select>' +
+        '<label class="btn btn-ghost filebtn" for="addFiles">Add files</label></div>' +
+        '<input type="file" id="addFiles" class="sr" accept="image/*,application/pdf" multiple>' +
+        '<div class="progress" id="sheetProg" hidden><div class="bar" id="sheetBar"></div></div><p class="hint" id="sheetProgText" hidden></p>';
+    }
+    html += '</div>';
+    return html;
+  }
+
+  function loadThumbs(delId) {
+    var need = (S.imgList[delId] || []).filter(function (x) { return !x.IsPdf && !S.thumbs[x.ImageID]; });
+    var chain = Promise.resolve();
+    for (var i = 0; i < need.length; i += 6) {
+      (function (ids) {
+        chain = chain.then(function () {
+          return api('getImageThumbs', ids).then(function (map) {
+            ids.forEach(function (id) {
+              var t = map[id];
+              S.thumbs[id] = (t && t.base64) ? 'data:' + t.mime + ';base64,' + t.base64 : 'none';
+              var b = document.querySelector('[data-thumb="' + id + '"]');
+              if (b && S.thumbs[id] !== 'none') b.innerHTML = '<img alt="" src="' + S.thumbs[id] + '">';
+            });
+          }, function () { ids.forEach(function (id) { S.thumbs[id] = 'none'; }); });
+        });
+      })(need.slice(i, i + 6).map(function (x) { return x.ImageID; }));
+    }
+  }
+
+  /* full-size viewer */
+  function cacheFull(id, res) {
+    S.full[id] = res; S.fullKeys.push(id);
+    while (S.fullKeys.length > 6) delete S.full[S.fullKeys.shift()];
+  }
+  function openLightbox(delId, imgId) {
+    var list = S.imgList[delId] || [], idx = 0;
+    for (var i = 0; i < list.length; i++) if (list[i].ImageID === imgId) idx = i;
+    S.lb = {list: list, idx: idx};
+    $('#lightbox').hidden = false;
+    document.body.style.overflow = 'hidden';
+    renderLightbox();
+  }
+  function closeLightbox() {
+    $('#lightbox').hidden = true;
+    $('#lbStage').innerHTML = '';
+    document.body.style.overflow = $('#sheet').hidden ? '' : 'hidden';
+  }
+  function lbStep(n) {
+    var lb = S.lb, len = lb.list.length;
+    if (len < 2) return;
+    lb.idx = (lb.idx + n + len) % len;
+    renderLightbox();
+  }
+  function showFull(x, res) {
+    var stage = $('#lbStage');
+    if (res.mime === 'application/pdf') stage.innerHTML = '<div>PDF document<br><button class="btn" data-act="lb-pdf" data-id="' + esc(x.ImageID) + '">Open PDF</button></div>';
+    else stage.innerHTML = '<img alt="' + esc(x.FileName) + '" src="data:' + esc(res.mime) + ';base64,' + res.base64 + '">';
+  }
+  function renderLightbox() {
+    var lb = S.lb, x = lb.list[lb.idx];
+    if (!x) return;
+    $('#lbCap').innerHTML = esc(x.FileName) + '<small>' + esc(x.TypeLabel) + ', added by ' + esc(x.UploadedBy || 'unknown') + ' on ' + esc(x.UploadedLabel) + '</small>';
+    $('#lbCount').textContent = (lb.idx + 1) + ' of ' + lb.list.length;
+    var stage = $('#lbStage'), idx = lb.idx;
+    if (S.full[x.ImageID]) { showFull(x, S.full[x.ImageID]); return; }
+    stage.innerHTML = '<div>Loading...</div>';
+    api('getImageData', x.ImageID).then(function (res) {
+      cacheFull(x.ImageID, res);
+      if (S.lb === lb && lb.idx === idx && !$('#lightbox').hidden) showFull(x, res);
+    }).catch(function (e) {
+      if (S.lb === lb && lb.idx === idx && !$('#lightbox').hidden) stage.innerHTML = '<div>This file could not be opened.<br><small>' + esc((e && e.message) || '') + '</small></div>';
+    });
+  }
+  function openPdf(id) {
+    var res = S.full[id];
+    if (!res) return;
+    var bin = atob(res.base64), bytes = new Uint8Array(bin.length);
+    for (var i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([bytes], {type: 'application/pdf'}));
+    a.target = '_blank'; a.rel = 'noopener';
+    document.body.appendChild(a); a.click(); a.remove();
+  }
+
+  /* ---------- detail sheet ---------- */
+  var EVENT_LABEL = {CREATED:'Delivery created', EDITED:'Details edited', EMPLOYEE_CHANGED:'Employee changed', COMPLETED:'Marked completed', UNDELIVERED:'Marked undelivered', RESCHEDULED:'Rescheduled', REOPENED:'Reopened', IMAGE_ADDED:'Images added', MATERIAL_PREPARED:'Material prepared', MATERIAL_HANDED_OVER:'Material handed over'};
+
+  function historyHtml(hist) {
+    if (hist === null) return '<div class="hist" id="histBox"><h3>History</h3><p class="muted">Loading history...</p></div>';
+    if (hist === 'error') return '<div class="hist" id="histBox"><h3>History</h3><p class="muted">History could not be loaded.</p></div>';
+    if (!hist.length) return '<div class="hist" id="histBox"><h3>History</h3><p class="muted">No history recorded yet.</p></div>';
+    return '<div class="hist" id="histBox"><h3>History</h3><ol>' + hist.map(function (h) {
+      var lines = [];
+      if (h.PreviousStatus && h.NewStatus && h.PreviousStatus !== h.NewStatus) lines.push((LABEL[h.PreviousStatus] || h.PreviousStatus) + ' to ' + (LABEL[h.NewStatus] || h.NewStatus));
+      if (h.NewScheduledDate && !h.PreviousScheduledDate) lines.push('Scheduled for ' + niceDate(h.NewScheduledDate));
+      else if (h.PreviousScheduledDate && h.NewScheduledDate && h.PreviousScheduledDate !== h.NewScheduledDate) lines.push('Moved from ' + niceDate(h.PreviousScheduledDate) + ' to ' + niceDate(h.NewScheduledDate));
+      if (h.Reason) lines.push('Reason: ' + h.Reason);
+      if (h.Remarks) lines.push(h.Remarks);
+      return '<li><div class="h-top">' + esc(EVENT_LABEL[h.EventType] || h.EventType) + '<span>' + esc(h.EventLabel) + '</span></div>' +
+        lines.map(function (l) { return '<div class="h-line">' + esc(l) + '</div>'; }).join('') +
+        (h.EmployeeName ? '<div class="h-by">By ' + esc(h.EmployeeName) + '</div>' : '') + '</li>';
+    }).join('') + '</ol></div>';
+  }
+
+  function materialBtn(d, hist) {
+    if (!P().material || d.Status === 'COMPLETED' || !Array.isArray(hist)) return '';
+    var prepared = hist.some(function (h) { return h.EventType === 'MATERIAL_PREPARED'; });
+    var handed = hist.some(function (h) { return h.EventType === 'MATERIAL_HANDED_OVER'; });
+    var id = esc(d.DeliveryID);
+    if (!prepared) return '<button class="btn btn-blue" data-act="material" data-stage="PREPARED" data-id="' + id + '">Mark material prepared</button>';
+    if (!handed) return '<button class="btn btn-blue" data-act="material" data-stage="HANDED_OVER" data-id="' + id + '">Mark material handed over</button>';
+    return '';
+  }
+
+  function detailHtml(d, hist) {
+    var st = dispStatus(d);
+    var rows = [
+      ['Customer', d.CustomerName],
+      ['Mobile', d.CustomerMobile, 'tel'],
+      ['Invoice', d.InvoiceNumber],
+      ['Address', d.DeliveryAddress, 'map'],
+      ['Scheduled for', longDate(d.CurrentScheduledDate) + (d.ExpectedDeliveryTime ? ', ' + time12(d.ExpectedDeliveryTime) : '')],
+      ['Originally planned', d.IsRescheduled ? longDate(d.OriginalScheduledDate) : ''],
+      ['Booked on', d.BookingDate ? longDate(d.BookingDate) : ''],
+      ['Employee', d.DeliveryEmployee],
+      ['Material', d.MaterialDescription],
+      ['Quantity', qtyText(d)],
+      ['Vehicle', d.VehicleNumber],
+      ['Driver', d.DriverName],
+      ['Instructions', d.DeliveryInstructions],
+      ['Last attempt', d.LastAttemptDate ? longDate(d.LastAttemptDate) : ''],
+      ['Delivered on', d.ActualDeliveryDate ? longDate(d.ActualDeliveryDate) : ''],
+      ['Completed by', d.CompletedBy],
+      ['Completion remarks', d.CompletionRemarks]
+    ];
+    var html = '<div class="sh-head"><div><h2 id="sheetTitle">' + esc(d.CustomerName || 'Delivery') + '</h2><div class="sh-id">' + esc(d.DeliveryID) + '</div></div>' + pill(st) + '</div><dl class="sh-rows">';
+    rows.forEach(function (r) {
+      var v = r[1];
+      if (v === '' || v == null) return;
+      var out = esc(v);
+      if (r[2] === 'tel') out = '<a href="tel:' + esc(String(v).replace(/[^\d+]/g, '')) + '">' + out + '</a>';
+      if (r[2] === 'map') out = '<a href="https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(v) + '" target="_blank" rel="noopener">' + out + '</a>';
+      html += '<div><dt>' + r[0] + '</dt><dd>' + out + '</dd></div>';
+    });
+    html += '</dl>' + photosHtml(d.DeliveryID) + historyHtml(hist) +
+      '<div class="btn-row">' +
+      (d.Status !== 'COMPLETED' && P().complete ? '<button class="btn btn-ok" data-act="wf" data-kind="complete" data-id="' + esc(d.DeliveryID) + '">Mark as completed</button>' : '') +
+      (d.Status !== 'COMPLETED' && P().undelivered ? '<button class="btn btn-bad" data-act="wf" data-kind="undelivered" data-id="' + esc(d.DeliveryID) + '">Mark as undelivered</button>' : '') +
+      (d.Status !== 'COMPLETED' && P().reschedule ? '<button class="btn btn-blue" data-act="wf" data-kind="reschedule" data-id="' + esc(d.DeliveryID) + '">Reschedule delivery</button>' : '') +
+      materialBtn(d, hist) +
+      (d.Status === 'COMPLETED' && P().reopen ? '<button class="btn btn-bad" data-act="reopen" data-id="' + esc(d.DeliveryID) + '">Reopen delivery</button>' : '') +
+      (P().edit ? '<button class="btn btn-ghost" data-act="edit" data-id="' + esc(d.DeliveryID) + '">Edit delivery</button>' : '') +
+      '<button class="btn btn-ghost" data-act="close-sheet">Close</button></div>';
+    return html;
+  }
+
+  function openDetail(id) {
+    var d = S.byId[id];
+    if (!d) { toast('Delivery not found. Refresh and try again.', 'error'); return; }
+    S.openId = id;
+    openSheet(detailHtml(d, null));
+    loadDetail(id);
+  }
+  function loadDetail(id) {
+    api('getDeliveryDetail', id).then(function (res) {
+      S.byId[id] = res.delivery;
+      if (S.openId !== id || $('#sheet').hidden) return;
+      var panel = $('.sheet-panel'), top = panel.scrollTop;
+      $('#sheetBody').innerHTML = detailHtml(res.delivery, res.history);
+      panel.scrollTop = top;
+      loadThumbs(id);
+    }).catch(function () {
+      var h = $('#histBox');
+      if (S.openId === id && !$('#sheet').hidden && h) h.outerHTML = historyHtml('error');
+    });
+    if (!P().images) return;
+    api('getDeliveryImages', id).then(function (res) {
+      S.imgList[id] = res.images;
+      var box = $('#photoBox');
+      if (S.openId === id && !$('#sheet').hidden && box) box.outerHTML = photosHtml(id);
+      loadThumbs(id);
+    }).catch(function () {
+      var box = $('#photoBox');
+      if (S.openId === id && !$('#sheet').hidden && box) box.outerHTML = '<div class="photos" id="photoBox"><h3>Photos and documents</h3><p class="muted">Photos could not be loaded. Check that the Images file was added to the script.</p></div>';
+    });
+  }
+  function openSheet(html) {
+    $('#sheetBody').innerHTML = html;
+    $('#sheet').hidden = false;
+    document.body.style.overflow = 'hidden';
+    var b = $('#sheet .btn'); if (b) b.focus();
+  }
+  function closeSheet() { $('#sheet').hidden = true; S.openId = null; document.body.style.overflow = ''; }
+
+  /* ---------- delivery form (new and edit) ---------- */
+  var FORM = {mode: 'new', id: null, version: '', requestId: '', saving: false, dirty: false, from: 'dashboard', ready: false, preparing: 0, files: {photos: [], invoice: null}};
+
+  function newRequestId() {
+    return (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : 'r' + Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
+  }
+  function optHtml(v) { return '<option value="' + esc(v) + '">' + esc(v) + '</option>'; }
+  function setErr(id, msg) {
+    var f = $('#' + id).closest('.fld');
+    f.classList.add('bad');
+    var e = f.querySelector('.err'); e.textContent = msg; e.hidden = false;
+  }
+  function clearErrors() {
+    var bad = document.querySelectorAll('#deliveryForm .fld.bad');
+    for (var i = 0; i < bad.length; i++) bad[i].classList.remove('bad');
+    var errs = document.querySelectorAll('#deliveryForm .err');
+    for (var j = 0; j < errs.length; j++) errs[j].hidden = true;
+  }
+
+  function openForm(mode, d) {
+    FORM.mode = mode; FORM.id = d ? d.DeliveryID : null; FORM.version = d ? d.LastUpdatedAt : '';
+    FORM.requestId = newRequestId(); FORM.saving = false; FORM.dirty = false; FORM.from = S.view;
+    closeSheet();
+    $('#deliveryForm').reset(); clearErrors();
+    $('#formTitle').textContent = mode === 'new' ? 'New delivery' : 'Edit delivery';
+    $('#btnSave').textContent = mode === 'new' ? 'Save delivery' : 'Save changes';
+    FORM.ready = false; FORM.preparing = 0; FORM.files = {photos: [], invoice: null};
+    renderSelected();
+    $('#uploadCard').hidden = mode !== 'new';
+    $('#upProgress').hidden = true; $('#upText').hidden = true; $('#upBar').style.width = '0';
+    updateSaveBtn();
+    $('#remarksFld').hidden = mode !== 'new';
+    $('#fdSched').disabled = mode !== 'new';
+    $('#schedHint').hidden = mode === 'new';
+    $('#formInfo').innerHTML = mode === 'new'
+      ? 'The delivery ID is created when you save. Booking date: <b>' + esc(niceDate(S.boot.today)) + '</b>'
+      : 'Delivery ID: <b>' + esc(d.DeliveryID) + '</b>';
+    showView('form', true);
+    api('getFormOptions').then(function (o) {
+      fillForm(o, d);
+      FORM.ready = true; updateSaveBtn();
+    }).catch(fail);
+  }
+
+  function fillForm(o, d) {
+    var names = o.employees.slice();
+    if (d && d.DeliveryEmployee && names.indexOf(d.DeliveryEmployee) === -1) names.push(d.DeliveryEmployee);
+    $('#fdEmp').innerHTML = '<option value="">Select employee</option>' + names.map(optHtml).join('');
+    $('#empHint').hidden = o.employees.length > 0;
+    var units = o.units.slice();
+    if (d && d.QuantityUnit && units.indexOf(d.QuantityUnit) === -1) units.push(d.QuantityUnit);
+    $('#fdUnit').innerHTML = units.map(optHtml).join('');
+    if (d) {
+      $('#fdSched').value = d.CurrentScheduledDate; $('#fdTime').value = d.ExpectedDeliveryTime || '';
+      $('#fdEmp').value = d.DeliveryEmployee || ''; $('#fdCust').value = d.CustomerName || '';
+      $('#fdMobile').value = d.CustomerMobile || ''; $('#fdInv').value = d.InvoiceNumber || '';
+      $('#fdAddr').value = d.DeliveryAddress || ''; $('#fdMat').value = d.MaterialDescription || '';
+      $('#fdQty').value = d.Quantity; $('#fdUnit').value = d.QuantityUnit || units[0];
+      $('#fdVeh').value = d.VehicleNumber || ''; $('#fdDriver').value = d.DriverName || '';
+      $('#fdInstr').value = d.DeliveryInstructions || '';
+      $('#fdSched').removeAttribute('min');
+    } else {
+      $('#fdSched').min = o.today; $('#fdSched').value = o.today;
+    }
+    FORM.dirty = false;
+  }
+
+  function collectForm() {
+    clearErrors();
+    var errs = 0;
+    function v(id) { return $('#' + id).value.trim(); }
+    function bad(id, msg) { setErr(id, msg); errs++; }
+    var data = {
+      scheduledDate: v('fdSched'), expectedTime: v('fdTime'), employee: v('fdEmp'), customer: v('fdCust'),
+      mobile: v('fdMobile'), invoice: v('fdInv'), address: v('fdAddr'), material: v('fdMat'),
+      quantity: v('fdQty'), unit: v('fdUnit'), vehicle: v('fdVeh'), driver: v('fdDriver'),
+      instructions: v('fdInstr'), remarks: v('fdRemarks')
+    };
+    if (FORM.mode === 'new') {
+      if (!data.scheduledDate) bad('fdSched', 'Choose the delivery date.');
+      else if (data.scheduledDate < S.boot.today) bad('fdSched', 'The date cannot be in the past.');
+    }
+    if (!data.employee) bad('fdEmp', 'Choose who will deliver.');
+    if (!data.customer) bad('fdCust', 'Enter the customer name.');
+    var digits = data.mobile.replace(/\D/g, '');
+    if (digits.length < 10 || digits.length > 13) bad('fdMobile', 'Enter a valid mobile number (10 digits).');
+    if (!data.invoice) bad('fdInv', 'Enter the invoice number.');
+    if (!data.address) bad('fdAddr', 'Enter the delivery address.');
+    if (!data.material) bad('fdMat', 'Describe the material.');
+    var q = Number(data.quantity);
+    if (!data.quantity || !isFinite(q) || q <= 0) bad('fdQty', 'Enter a quantity above 0.');
+    if (!data.unit) bad('fdUnit', 'Choose a unit.');
+    if (errs) {
+      var first = $('#deliveryForm .fld.bad input, #deliveryForm .fld.bad select, #deliveryForm .fld.bad textarea');
+      if (first) { first.focus(); if (first.scrollIntoView) first.scrollIntoView({block: 'center'}); }
+      toast('Please fix the highlighted fields.', 'error');
+      return null;
+    }
+    return data;
+  }
+
+  function afterSave() { S.calCache = {}; S.list.loaded = false; S.dashAt = 0; }
+  function refreshCurrent() {
+    if (S.view === 'dashboard') loadDashboard();
+    else if (S.view === 'calendar') loadCalendar();
+    else if (S.view === 'deliveries') loadList(true);
+  }
+
+  function submitForm(e) {
+    e.preventDefault();
+    if (FORM.saving) return;
+    var data = collectForm();
+    if (!data) return;
+    FORM.saving = true;
+    var btn = $('#btnSave');
+    btn.textContent = 'Saving...'; updateSaveBtn();
+    var call = FORM.mode === 'new' ? api('createDelivery', data, FORM.requestId) : api('updateDelivery', FORM.id, data, FORM.version);
+    call.then(function (res) {
+      afterSave();
+      FORM.dirty = false;
+      if (FORM.mode === 'new') {
+        var finish = function (failedCount) {
+          if (failedCount) toast('Saved ' + res.deliveryId + ', but ' + failedCount + ' file(s) could not be uploaded. Open the delivery to add them again.', 'error');
+          else toast((res.duplicate ? 'Already saved: ' : 'Saved: ') + res.deliveryId);
+          S.cal.mode = 'day'; S.cal.sel = data.scheduledDate;
+          showView('calendar');
+          loadDashboard();
+        };
+        var items = res.duplicate ? [] : uploadItems();
+        if (!items.length) { finish(0); return; }
+        btn.textContent = 'Uploading files...';
+        uploadBatch(res.deliveryId, items, 'create', showFormProgress).then(function (r) { finish(r.failed.length); });
+      } else {
+        toast(res.unchanged ? 'No changes to save.' : 'Changes saved.');
+        S.byId[FORM.id] = res.delivery;
+        showView(FORM.from || 'dashboard', true);
+        refreshCurrent();
+        openDetail(FORM.id);
+      }
+    }).catch(function (err) {
+      FORM.saving = false;
+      btn.textContent = FORM.mode === 'new' ? 'Save delivery' : 'Save changes';
+      updateSaveBtn();
+      fail(err);
+    });
+  }
+
+  function closeForm() {
+    if (FORM.saving) return;
+    if (FORM.dirty && !window.confirm('Discard what you have entered?')) return;
+    showView(FORM.from || 'dashboard', true);
+  }
+
+  /* ---------- status actions: complete, undelivered, reschedule ---------- */
+  var ACT = {kind: '', id: null, version: '', requestId: '', saving: false, ready: false, preparing: 0, photos: [], signed: false, dirty: false, from: 'dashboard', clearSig: null};
+  var ACT_TITLE = {complete: 'Mark as completed', undelivered: 'Mark as undelivered', reschedule: 'Reschedule delivery'};
+  var ACT_SAVE = {complete: 'Confirm delivery', undelivered: 'Save as undelivered', reschedule: 'Reschedule'};
+  var ACT_FN = {complete: 'completeDelivery', undelivered: 'markUndelivered', reschedule: 'rescheduleDelivery'};
+
+  function optList(values, selected, placeholder) {
+    return (placeholder ? '<option value="">' + esc(placeholder) + '</option>' : '') + values.map(function (v) {
+      return '<option value="' + esc(v) + '"' + (v === selected ? ' selected' : '') + '>' + esc(v) + '</option>';
+    }).join('');
+  }
+  function fld(id, label, control, optional) {
+    return '<div class="fld"><label for="' + id + '">' + label + (optional ? ' <span class="opt">(optional)</span>' : '') + '</label>' + control + '<small class="err" hidden></small></div>';
+  }
+  function fileFld(label, inputId, listId, btnText) {
+    return '<div class="fld"><label>' + label + ' <span class="opt">(optional)</span></label>' +
+      '<label class="btn btn-ghost filebtn" for="' + inputId + '">' + btnText + '</label>' +
+      '<input type="file" id="' + inputId + '" class="sr" accept="image/*" multiple><div id="' + listId + '" class="sel-list"></div></div>';
+  }
+
+  function openAction(kind, d) {
+    ACT.kind = kind; ACT.id = d.DeliveryID; ACT.version = d.LastUpdatedAt; ACT.requestId = newRequestId();
+    ACT.saving = false; ACT.ready = false; ACT.preparing = 0; ACT.photos = []; ACT.signed = false; ACT.dirty = false; ACT.clearSig = null;
+    if (S.view !== 'action') ACT.from = S.view;
+    closeSheet();
+    $('#view-action').innerHTML = '<div class="loading">Loading...</div>';
+    showView('action', true);
+    api('getWorkflowOptions').then(function (o) {
+      if (ACT.id !== d.DeliveryID || ACT.kind !== kind || S.view !== 'action') return;
+      renderAction(kind, d, o);
+    }).catch(function (e) { fail(e); showView(ACT.from || 'dashboard', true); });
+  }
+
+  function renderAction(kind, d, o) {
+    var emps = o.employees.slice();
+    if (d.DeliveryEmployee && emps.indexOf(d.DeliveryEmployee) === -1) emps.push(d.DeliveryEmployee);
+    var sel = emps.indexOf(d.DeliveryEmployee) !== -1 ? d.DeliveryEmployee : '';
+    var head = '<div class="form-head"><button type="button" class="icon-btn" data-act="act-cancel" aria-label="Back"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button><h1>' + ACT_TITLE[kind] + '</h1></div>' +
+      '<div class="act-sum"><div><div class="act-cust">' + esc(d.CustomerName) + '</div><div class="act-meta">Invoice ' + esc(d.InvoiceNumber || '-') + ', scheduled ' + esc(longDate(d.CurrentScheduledDate)) + '</div></div>' + pill(dispStatus(d)) + '</div>';
+    var body = '';
+    if (kind === 'complete') {
+      body = '<div class="form-card"><div class="row2">' +
+        fld('afDate', 'Actual delivery date', '<input type="date" id="afDate" max="' + esc(o.today) + '" value="' + esc(o.today) + '">') +
+        fld('afTime', 'Actual delivery time', '<input type="time" id="afTime" value="' + esc(o.nowTime) + '">') + '</div>' +
+        fld('afBy', 'Delivered by', '<select id="afBy">' + optList(emps, sel, 'Select employee') + '</select>') +
+        fld('afRemarks', 'Delivery confirmation remarks', '<textarea id="afRemarks" maxlength="1000"></textarea>', true) + '</div>' +
+        '<div class="form-card"><h2>Proof of delivery</h2>' + fileFld('Delivery proof photos', 'afPhotos', 'afPhotoList', 'Add photos') +
+        '<div class="fld"><label>Customer signature <span class="opt">(optional)</span></label><canvas id="afSig" class="sig" aria-label="Signature area"></canvas>' +
+        '<button type="button" class="btn btn-ghost" data-act="sig-clear">Clear signature</button></div></div>';
+    } else if (kind === 'undelivered') {
+      body = '<div class="form-card"><div class="row2">' +
+        fld('afDate', 'Attempt date', '<input type="date" id="afDate" max="' + esc(o.today) + '" value="' + esc(o.today) + '">') +
+        fld('afTime', 'Attempt time', '<input type="time" id="afTime" value="' + esc(o.nowTime) + '">') + '</div>' +
+        fld('afBy', 'Employee', '<select id="afBy">' + optList(emps, sel, 'Select employee') + '</select>') +
+        fld('afReason', 'Reason for non-delivery', '<select id="afReason">' + optList(o.undeliveredReasons, '', 'Select reason') + '</select>') +
+        '<div class="fld" id="afCustomWrap" hidden><label for="afCustom">Describe the reason</label><input type="text" id="afCustom" maxlength="120"><small class="err" hidden></small></div>' +
+        fld('afRemarks', 'Remarks', '<textarea id="afRemarks" maxlength="1000"></textarea>', true) + '</div>' +
+        '<div class="form-card"><h2>Evidence</h2>' + fileFld('Photos', 'afPhotos', 'afPhotoList', 'Add photos') +
+        '<label class="check"><input type="checkbox" id="afResched"> Reschedule this delivery right away</label></div>';
+    } else {
+      body = '<div class="form-card">' +
+        fld('afPrev', 'Previous scheduled date', '<input type="text" id="afPrev" value="' + esc(longDate(d.CurrentScheduledDate)) + '" disabled>') +
+        '<div class="row2">' +
+        fld('afNewDate', 'New delivery date', '<input type="date" id="afNewDate" min="' + esc(o.today) + '">') +
+        fld('afNewTime', 'Expected time', '<input type="time" id="afNewTime">', true) + '</div>' +
+        fld('afReason', 'Reason for rescheduling', '<select id="afReason">' + optList(o.rescheduleReasons, '', 'Select reason') + '</select>') +
+        '<div class="fld" id="afCustomWrap" hidden><label for="afCustom">Describe the reason</label><input type="text" id="afCustom" maxlength="120"><small class="err" hidden></small></div>' +
+        fld('afBy', 'Rescheduled by', '<select id="afBy">' + optList(emps, sel, 'Select employee') + '</select>') +
+        fld('afRemarks', 'Remarks', '<textarea id="afRemarks" maxlength="1000"></textarea>', true) + '</div>';
+    }
+    $('#view-action').innerHTML = head + body +
+      '<div class="progress" id="afProg" hidden><div class="bar" id="afBar"></div></div><p class="hint up-text" id="afProgText" hidden></p>' +
+      '<div class="form-bar"><button type="button" class="btn btn-ghost" data-act="act-cancel">Cancel</button>' +
+      '<button type="button" class="btn" id="afSave" data-act="act-submit">' + ACT_SAVE[kind] + '</button></div>';
+    ACT.ready = true;
+    if (kind === 'complete') initSignature();
+    window.scrollTo(0, 0);
+  }
+
+  function initSignature() {
+    var c = $('#afSig');
+    if (!c) return;
+    var dpr = window.devicePixelRatio || 1, w = c.clientWidth || 300, h = c.clientHeight || 160;
+    c.width = w * dpr; c.height = h * dpr;
+    var ctx = c.getContext('2d');
+    ctx.scale(dpr, dpr);
+    var blank = function () { ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, w, h); ctx.strokeStyle = '#0f172a'; ctx.fillStyle = '#0f172a'; ctx.lineWidth = 2.4; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; };
+    blank();
+    var drawing = false, lx = 0, ly = 0;
+    function pos(e) { var r = c.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; }
+    c.addEventListener('pointerdown', function (e) {
+      drawing = true; var p = pos(e); lx = p[0]; ly = p[1];
+      try { c.setPointerCapture(e.pointerId); } catch (x) {}
+      ctx.beginPath(); ctx.arc(lx, ly, 1.2, 0, Math.PI * 2); ctx.fill();
+      ACT.signed = true; ACT.dirty = true; e.preventDefault();
+    });
+    c.addEventListener('pointermove', function (e) {
+      if (!drawing) return;
+      var p = pos(e);
+      ctx.beginPath(); ctx.moveTo(lx, ly); ctx.lineTo(p[0], p[1]); ctx.stroke();
+      lx = p[0]; ly = p[1]; e.preventDefault();
+    });
+    var stop = function () { drawing = false; };
+    c.addEventListener('pointerup', stop); c.addEventListener('pointercancel', stop); c.addEventListener('pointerleave', stop);
+    ACT.clearSig = function () { blank(); ACT.signed = false; };
+  }
+
+  function clearActErrors() {
+    var bad = document.querySelectorAll('#view-action .fld.bad');
+    for (var i = 0; i < bad.length; i++) bad[i].classList.remove('bad');
+    var errs = document.querySelectorAll('#view-action .err');
+    for (var j = 0; j < errs.length; j++) errs[j].hidden = true;
+  }
+
+  function collectAction(d) {
+    clearActErrors();
+    var errs = 0, kind = ACT.kind, today = S.boot.today;
+    function v(id) { var e = $('#' + id); return e ? e.value.trim() : ''; }
+    function bad(id, msg) { setErr(id, msg); errs++; }
+    var data = {};
+    if (kind === 'complete' || kind === 'undelivered') {
+      var date = v('afDate'), time = v('afTime'), by = v('afBy');
+      if (!date) bad('afDate', 'Choose the date.'); else if (date > today) bad('afDate', 'The date cannot be in the future.');
+      if (!time) bad('afTime', 'Enter the time.');
+      if (!by) bad('afBy', kind === 'complete' ? 'Choose who delivered.' : 'Choose the employee.');
+      if (kind === 'complete') {
+        data = {actualDate: date, actualTime: time, deliveredBy: by, remarks: v('afRemarks')};
+      } else {
+        var reason = v('afReason'), custom = v('afCustom');
+        if (!reason) bad('afReason', 'Choose a reason.');
+        if (reason === 'Other' && !custom) bad('afCustom', 'Describe the reason.');
+        data = {attemptDate: date, attemptTime: time, employee: by, reason: reason, customReason: custom, remarks: v('afRemarks'), rescheduleNow: !!($('#afResched') && $('#afResched').checked)};
+      }
+    } else {
+      var nd = v('afNewDate'), r2 = v('afReason'), c2 = v('afCustom'), by2 = v('afBy');
+      if (!nd) bad('afNewDate', 'Choose the new date.');
+      else if (nd < today) bad('afNewDate', 'The new date cannot be in the past.');
+      else if (nd === d.CurrentScheduledDate && d.Status !== 'UNDELIVERED') bad('afNewDate', 'Choose a date different from the current one.');
+      if (!r2) bad('afReason', 'Choose a reason.');
+      if (r2 === 'Other' && !c2) bad('afCustom', 'Describe the reason.');
+      if (!by2) bad('afBy', 'Choose who is rescheduling.');
+      data = {newDate: nd, newTime: v('afNewTime'), reason: r2, customReason: c2, rescheduledBy: by2, remarks: v('afRemarks')};
+    }
+    if (errs) {
+      var first = $('#view-action .fld.bad input, #view-action .fld.bad select, #view-action .fld.bad textarea');
+      if (first) { first.focus(); if (first.scrollIntoView) first.scrollIntoView({block: 'center'}); }
+      toast('Please fix the highlighted fields.', 'error');
+      return null;
+    }
+    return data;
+  }
+
+  function renderActFiles() {
+    var box = $('#afPhotoList');
+    if (box) box.innerHTML = ACT.photos.map(function (f, i) { return selItem(f, i, 'rm-aphoto'); }).join('');
+  }
+  function handleActPick(input) {
+    var files = input.files;
+    if (!files || !files.length) return;
+    ACT.preparing++;
+    prepareMany(files).then(function (r) {
+      var msg = r.errors[0];
+      r.ok.forEach(function (x) {
+        if (ACT.photos.length < 10) ACT.photos.push(x); else msg = 'You can add up to 10 photos here. Add more after saving.';
+      });
+      if (r.ok.length) ACT.dirty = true;
+      renderActFiles();
+      if (msg) toast(msg, 'error');
+    }).then(function () { ACT.preparing = Math.max(0, ACT.preparing - 1); input.value = ''; });
+  }
+  function actItems() {
+    var type = ACT.kind === 'complete' ? 'PROOF' : 'UNDELIVERED';
+    var items = ACT.photos.map(function (f) { f.type = type; return f; });
+    if (ACT.kind === 'complete' && ACT.signed) {
+      var b64 = $('#afSig').toDataURL('image/png').split(',')[1];
+      items.push({id: newRequestId(), name: 'customer-signature.png', mime: 'image/png', b64: b64, size: Math.floor(b64.length * 3 / 4), thumb: '', type: 'PROOF'});
+    }
+    return items;
+  }
+  function showActProgress(done, total) {
+    var p = $('#afProg'), t = $('#afProgText');
+    if (!p || !t) return;
+    p.hidden = false; t.hidden = false;
+    $('#afBar').style.width = Math.round(done / total * 100) + '%';
+    t.textContent = done < total ? 'Uploading file ' + (done + 1) + ' of ' + total + '...' : 'Uploads finished.';
+  }
+
+  function submitAction() {
+    if (ACT.saving || !ACT.ready) return;
+    if (ACT.preparing > 0) { toast('Photos are still being prepared. Try again in a moment.', 'error'); return; }
+    var d = S.byId[ACT.id];
+    if (!d) { toast('Delivery not found. Refresh and try again.', 'error'); return; }
+    var data = collectAction(d);
+    if (!data) return;
+    ACT.saving = true;
+    var btn = $('#afSave'), kind = ACT.kind, id = ACT.id;
+    btn.disabled = true; btn.textContent = 'Saving...';
+    api(ACT_FN[kind], id, data, ACT.version, ACT.requestId).then(function (res) {
+      afterSave();
+      if (res.delivery) S.byId[id] = res.delivery;
+      var finish = function (failed) {
+        var msg = kind === 'complete' ? 'Marked as completed.' : kind === 'undelivered' ? 'Marked as undelivered.' : 'Rescheduled to ' + niceDate(data.newDate) + '.';
+        if (failed) toast(msg + ' But ' + failed + ' file(s) could not be uploaded. Open the delivery to add them again.', 'error');
+        else toast(res.duplicate ? 'Already saved.' : msg);
+        ACT.saving = false; ACT.dirty = false;
+        showView(ACT.from || 'dashboard', true);
+        refreshCurrent();
+        var fresh = S.byId[id];
+        if (kind === 'undelivered' && data.rescheduleNow && fresh) openAction('reschedule', fresh);
+        else openDetail(id);
+      };
+      var items = res.duplicate ? [] : actItems();
+      if (!items.length) { finish(0); return; }
+      btn.textContent = 'Uploading files...';
+      // 'create' context: no extra history line for each proof photo
+      uploadBatch(id, items, 'create', showActProgress).then(function (r) { finish(r.failed.length); });
+    }).catch(function (err) {
+      ACT.saving = false;
+      var b = $('#afSave');
+      if (b) { b.disabled = false; b.textContent = ACT_SAVE[kind]; }
+      fail(err);
+    });
+  }
+
+  function closeAction() {
+    if (ACT.saving) return;
+    if (ACT.dirty && !window.confirm('Discard what you have entered?')) return;
+    showView(ACT.from || 'dashboard', true);
+  }
+
+  /* ---------- sign-in, roles and administration ---------- */
+  var ROLE_LABEL = {ADMIN: 'Administrator', SHOP: 'Shop employee', DELIVERY: 'Delivery employee', GODOWN: 'Godown employee'};
+  var ADD_LABEL = {DELIVERY: 'Material photo', INVOICE: 'Invoice or document', PROOF: 'Delivery proof', UNDELIVERED: 'Undelivered evidence', OTHER: 'Other'};
+  var REOPEN_REQ = '';
+
+  function P() { return (S.me && S.me.perms) || {uploadTypes: []}; }
+  function isExpired(e) { return /SESSION_EXPIRED/.test((e && e.message) || ''); }
+  function cleanMsg(e) { return String((e && e.message) || 'Something went wrong.').replace(/^Error:\s*/, ''); }
+  function saveToken(t) { try { if (t) localStorage.setItem('vt_token', t); else localStorage.removeItem('vt_token'); } catch (e) {} }
+  function loadToken() { try { return localStorage.getItem('vt_token') || ''; } catch (e) { return ''; } }
+
+  function showLogin(msg) {
+    S.token = ''; saveToken('');
+    document.body.classList.add('locked');
+    $('#splash').hidden = true;
+    $('#view-login').hidden = false;
+    $('#sheet').hidden = true; $('#lightbox').hidden = true; document.body.style.overflow = '';
+    var err = $('#lgErr');
+    err.textContent = msg || ''; err.hidden = !msg;
+    $('#lgPin').value = '';
+    var b = $('#lgBtn'); b.disabled = false; b.textContent = 'Sign in';
+  }
+
+  function doLogin() {
+    var mob = $('#lgMobile').value.trim(), pin = $('#lgPin').value.trim(), err = $('#lgErr'), b = $('#lgBtn');
+    if (!mob || !pin) { err.textContent = 'Enter your mobile number and PIN.'; err.hidden = false; return; }
+    err.hidden = true; b.disabled = true; b.textContent = 'Signing in...';
+    rpc('login', [mob, pin]).then(function (res) {
+      S.token = res.token; saveToken(res.token);
+      $('#view-login').hidden = true;
+      bootApp();
+    }, function (e) {
+      err.textContent = cleanMsg(e); err.hidden = false;
+      b.disabled = false; b.textContent = 'Sign in';
+    });
+  }
+
+  function doLogout() {
+    var t = S.token;
+    if (t) rpc('logout', [t]).catch(function () {});
+    S.me = null; S.byId = {}; S.imgList = {}; S.thumbs = {}; S.full = {}; S.fullKeys = [];
+    S.calCache = {}; S.dash = null;
+    closeSheet();
+    showLogin('');
+  }
+
+  function applyPerms() { $('.fab').hidden = !P().create; }
+
+  function renderMore() {
+    var me = S.me, p = P();
+    var html = '<div class="panel"><h2>' + esc(me.name) + '</h2><p>' + esc(ROLE_LABEL[me.role] || me.role) + '</p>' +
+      '<div class="btn-row2"><button class="btn btn-ghost" data-act="pin-change">Change PIN</button>' +
+      '<button class="btn btn-ghost" data-act="logout">Sign out</button></div></div>';
+    if (p.admin) {
+      html += '<div class="panel"><h2>Administration</h2><div class="btn-row2"><button class="btn" data-act="emp-list">Employees</button>' +
+        '<button class="btn" data-act="settings">Settings</button></div></div>';
+    }
+    html += '<div class="panel"><h2>Business</h2><dl class="info"><div><dt>Business name</dt><dd>' + esc(S.boot.businessName) + '</dd></div>' +
+      '<div><dt>Time zone</dt><dd>' + esc(S.boot.timeZone) + '</dd></div></dl></div>';
+    $('#moreBody').innerHTML = html;
+  }
+
+
+  /* ---------- reports (Phase 7) ---------- */
+  var REPORTS = [
+    ['today', "Today's deliveries", 'Everything scheduled for today', false],
+    ['tomorrow', "Tomorrow's schedule", 'Plan the next day', false],
+    ['pending', 'Pending deliveries', 'Not yet delivered', true],
+    ['overdue', 'Overdue deliveries', 'Past their date and not delivered', true],
+    ['completed', 'Completed deliveries', 'By delivery date', true],
+    ['undelivered', 'Undelivered deliveries', 'With the last reason given', true],
+    ['rescheduled', 'Rescheduled deliveries', 'Who moved what, and why', true],
+    ['employee', 'Employee-wise report', 'Totals for each delivery employee', true],
+    ['date', 'Date-wise report', 'Totals for each day', true],
+    ['customer', 'Customer-wise report', 'Totals for each customer', true]
+  ];
+  var RP = {type: '', res: null, pdf: null, req: 0};
+
+  function rpInfo(type) { return REPORTS.filter(function (r) { return r[0] === type; })[0]; }
+  function rpReset() { RP.type = ''; RP.res = null; RP.pdf = null; RP.req++; }
+
+  function renderReports() {
+    if (RP.res) renderReportResult();
+    else if (RP.type) renderReportForm(RP.type);
+    else renderReportMenu();
+  }
+  function renderReportMenu() {
+    var list = P().admin ? REPORTS : REPORTS.filter(function (r) { return !r[3]; });
+    $('#reportsBody').innerHTML = '<div class="panel"><h2>Reports</h2><div class="rp-menu">' + list.map(function (r) {
+      return '<button class="rp-item" data-act="rp-open" data-type="' + r[0] + '"><span>' + esc(r[1]) + '<small>' + esc(r[2]) + '</small></span><span class="go">&rsaquo;</span></button>';
+    }).join('') + '</div>' + (P().admin ? '' : '<p class="rp-note">Other reports are available to administrators.</p>') + '</div>';
+  }
+  function renderReportForm(type) {
+    var info = rpInfo(type), t = S.boot.today;
+    var from = '', to = '';
+    if (type === 'completed') { to = t; from = add(t, -6); }
+    else if (['employee', 'date', 'customer', 'rescheduled'].indexOf(type) !== -1) { to = t; from = add(t, -29); }
+    $('#reportsBody').innerHTML = '<div class="panel"><h2>' + esc(info[1]) + '</h2><p class="rp-sub">' + esc(info[2]) + '</p>' +
+      fld('rpFrom', 'From date', '<input type="date" id="rpFrom" value="' + from + '">', true) +
+      fld('rpTo', 'To date', '<input type="date" id="rpTo" value="' + to + '">', true) +
+      fld('rpEmp', 'Employee', '<select id="rpEmp"><option value="">All employees</option>' + S.boot.employees.map(optHtml).join('') + '</select>', true) +
+      fld('rpCust', 'Customer name contains', '<input type="text" id="rpCust" maxlength="80">', true) +
+      '<div class="btn-row"><button class="btn" data-act="rp-run">Show report</button><button class="btn btn-ghost" data-act="rp-back">Back</button></div></div>';
+  }
+  function rpParams() {
+    var g = function (id) { var e = $('#' + id); return e ? e.value.trim() : ''; };
+    return {from: g('rpFrom'), to: g('rpTo'), employee: g('rpEmp'), customer: g('rpCust')};
+  }
+  function openReport(type) {
+    RP.type = type; RP.res = null; RP.pdf = null;
+    var info = rpInfo(type);
+    if (info && info[3]) renderReportForm(type);
+    else runReport({});
+  }
+  function runReport(params, btn) {
+    var req = ++RP.req;
+    if (btn) { btn.disabled = true; btn.textContent = 'Loading...'; }
+    else $('#reportsBody').innerHTML = '<div class="panel"><p>Loading report...</p></div>';
+    api('getReport', RP.type, params).then(function (res) {
+      if (req !== RP.req) return;
+      RP.res = res; RP.params = params; RP.pdf = null;
+      renderReportResult();
+    }).catch(function (e) {
+      if (req !== RP.req) return;
+      fail(e);
+      if (btn) { btn.disabled = false; btn.textContent = 'Show report'; } else renderReportMenu();
+    });
+  }
+  function renderReportResult() {
+    var r = RP.res, info = rpInfo(RP.type);
+    var head = r.columns.map(function (c) { return '<th>' + esc(c) + '</th>'; }).join('');
+    var body = r.rows.map(function (row) {
+      return '<tr' + (row[0] === 'Total' ? ' class="tot"' : '') + '>' + row.map(function (c) { return '<td>' + esc(c) + '</td>'; }).join('') + '</tr>';
+    }).join('');
+    $('#reportsBody').innerHTML = '<div class="panel"><h2>' + esc(r.title) + '</h2><p class="rp-sub">' + esc(r.subtitle) + '</p>' +
+      '<p class="rp-note">' + r.rows.length + ' rows' + (r.truncated ? '. Only the first rows are shown, please narrow the dates.' : '') + '</p>' +
+      (r.rows.length ? '<div class="rp-wrap"><table class="rp-table"><thead><tr>' + head + '</tr></thead><tbody>' + body + '</tbody></table></div>' : '<div class="empty">Nothing found for this report.</div>') +
+      (r.rows.length ? '<div class="btn-row2"><button class="btn" data-act="rp-csv">Save CSV</button>' +
+        (RP.pdf ? '<button class="btn btn-ok" data-act="rp-pdf-open">Open PDF</button>' : '<button class="btn" data-act="rp-pdf">Make PDF</button>') + '</div>' : '') +
+      '<div class="btn-row"><button class="btn btn-ghost" data-act="rp-change">' + (info && info[3] ? 'Change filters' : 'Back') + '</button>' +
+      (info && info[3] ? '<button class="btn btn-ghost" data-act="rp-back">All reports</button>' : '') + '</div></div>';
+  }
+  function csvCell(v) {
+    var s = String(v == null ? '' : v);
+    if (/^[=+\-@]/.test(s) && !/^-?\d+(\.\d+)?$/.test(s)) s = "'" + s;
+    return '"' + s.replace(/"/g, '""') + '"';
+  }
+  function saveCsv() {
+    var r = RP.res;
+    var lines = [r.columns].concat(r.rows).map(function (row) { return row.map(csvCell).join(','); });
+    var blob = new Blob(['\ufeff' + lines.join('\r\n')], {type: 'text/csv'});
+    var name = 'vinayak-' + RP.type + '-' + S.boot.today + '.csv';
+    var done = function () {
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(blob); a.download = name; a.target = '_blank'; a.rel = 'noopener';
+      document.body.appendChild(a); a.click(); a.remove();
+    };
+    try {
+      var f = new File([blob], name, {type: 'text/csv'});
+      if (navigator.canShare && navigator.canShare({files: [f]})) {
+        navigator.share({files: [f]}).catch(function (e) { if (!e || e.name !== 'AbortError') done(); });
+        return;
+      }
+    } catch (e) {}
+    done();
+  }
+  function makeReportPdf(btn) {
+    var req = RP.req;
+    btn.disabled = true; btn.textContent = 'Making PDF...';
+    api('getReportPdf', RP.type, RP.params || {}).then(function (res) {
+      if (req !== RP.req || !RP.res) return;
+      RP.pdf = res; renderReportResult(); toast('PDF is ready. Tap Open PDF.');
+    }).catch(function (e) { btn.disabled = false; btn.textContent = 'Make PDF'; fail(e); });
+  }
+  function openReportPdf() {
+    if (!RP.pdf) return;
+    var bin = atob(RP.pdf.base64), bytes = new Uint8Array(bin.length);
+    for (var i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([bytes], {type: 'application/pdf'}));
+    a.target = '_blank'; a.rel = 'noopener';
+    document.body.appendChild(a); a.click(); a.remove();
+  }
+
+  function bootApp() {
+    $('#splash').hidden = false;
+    $('#splashMsg').textContent = 'Loading...'; $('#splashRetry').hidden = true;
+    api('getInitialData').then(function (res) {
+      S.boot = res.boot; S.dash = res.dash; S.me = res.me; S.dashAt = Date.now();
+      S.cal.sel = res.boot.today; S.cal.mode = 'month';
+      S.byId = {}; S.imgList = {}; S.thumbs = {}; S.full = {}; S.fullKeys = []; S.calCache = {};
+      S.list = {items: [], total: 0, offset: 0, req: 0, loaded: false};
+      S.f = blankF(); S.chip = 'upcoming'; rpReset();
+      $('#fEmp').innerHTML = '<option value="">All employees</option>' + res.boot.employees.map(optHtml).join('');
+      document.body.classList.remove('locked');
+      $('#splash').hidden = true; $('#view-login').hidden = true;
+      applyPerms(); renderMore(); renderDashboard();
+      showView('dashboard', true);
+      if (P().images && P().uploadTypes.length) api('getUploadOptions').then(function (o) { S.up.opts = o; }).catch(function () {});
+    }).catch(function (e) {
+      if (isExpired(e)) return;
+      $('#splashMsg').textContent = 'The deliveries could not be loaded. ' + cleanMsg(e);
+      $('#splashRetry').hidden = false;
+    });
+  }
+
+  /* employees */
+  function openEmployees() {
+    openSheet('<h2 id="sheetTitle">Employees</h2><p class="muted">Loading...</p>');
+    api('listEmployees').then(function (list) { S.emps = list; renderEmployees(); }).catch(fail);
+  }
+  function renderEmployees() {
+    var html = '<div class="sh-head"><h2 id="sheetTitle">Employees</h2></div><div class="emp-list">' +
+      S.emps.map(function (e) {
+        return '<button class="emp-row" data-act="emp-edit" data-id="' + esc(e.id) + '"><div><b>' + esc(e.name) + '</b>' +
+          '<small>' + esc(ROLE_LABEL[e.role] || e.role || 'No role') + ', ' + esc(e.mobile || 'no mobile') + (e.hasPin ? '' : ', no PIN') + '</small></div>' +
+          '<span class="pill ' + (e.active ? 'st-completed' : 'st-undelivered') + '">' + (e.active ? 'Active' : 'Inactive') + '</span></button>';
+      }).join('') + '</div>' +
+      '<div class="btn-row"><button class="btn" data-act="emp-new">Add employee</button><button class="btn btn-ghost" data-act="close-sheet">Close</button></div>';
+    $('#sheetBody').innerHTML = html;
+  }
+  function empFormHtml(e) {
+    var isNew = !e;
+    return '<div class="sh-head"><h2 id="sheetTitle">' + (isNew ? 'Add employee' : 'Edit employee') + '</h2></div><div class="sh-form">' +
+      fld('efName', 'Name', '<input type="text" id="efName" maxlength="60" value="' + esc(e ? e.name : '') + '"' + (isNew ? '' : ' disabled') + '>') +
+      (isNew ? '' : '<small class="hint">The name cannot be changed because past deliveries are linked to it.</small>') +
+      fld('efMobile', 'Mobile number (used to sign in)', '<input type="tel" inputmode="tel" id="efMobile" maxlength="20" value="' + esc(e ? e.mobile : '') + '">') +
+      fld('efRole', 'Role', '<select id="efRole">' + ['ADMIN', 'SHOP', 'DELIVERY', 'GODOWN'].map(function (r) {
+        return '<option value="' + r + '"' + (e && e.role === r ? ' selected' : (!e && r === 'DELIVERY' ? ' selected' : '')) + '>' + ROLE_LABEL[r] + '</option>';
+      }).join('') + '</select>') +
+      '<small class="hint">Administrator: everything. Shop: creates and edits deliveries. Delivery: sees and updates only deliveries assigned to them. Godown: sees the schedule and material.</small>' +
+      fld('efEmail', 'Email', '<input type="email" id="efEmail" maxlength="100" value="' + esc(e ? e.email : '') + '">', true) +
+      (isNew ? '' : '<label class="check"><input type="checkbox" id="efActive"' + (e.active ? ' checked' : '') + '> Active (can sign in)</label>') +
+      fld('efPin', isNew ? 'PIN (4 to 8 digits)' : 'New PIN (leave empty to keep the current one)', '<input type="password" id="efPin" inputmode="numeric" maxlength="8" autocomplete="new-password">', !isNew) +
+      '</div><div class="btn-row"><button class="btn" data-act="emp-save" data-id="' + esc(e ? e.id : '') + '">Save</button>' +
+      '<button class="btn btn-ghost" data-act="emp-back">Back</button></div>';
+  }
+  function saveEmp(btn) {
+    var id = btn.getAttribute('data-id');
+    var data = {
+      id: id || '', name: $('#efName').value, mobile: $('#efMobile').value.trim(), role: $('#efRole').value,
+      email: $('#efEmail').value.trim(), pin: $('#efPin').value.trim(),
+      active: $('#efActive') ? $('#efActive').checked : true
+    };
+    btn.disabled = true; btn.textContent = 'Saving...';
+    api('saveEmployee', data).then(function (res) {
+      S.emps = res.employees; renderEmployees(); toast('Employee saved.');
+    }).catch(function (e) { btn.disabled = false; btn.textContent = 'Save'; fail(e); });
+  }
+
+  /* settings */
+  function openSettings() {
+    openSheet('<h2 id="sheetTitle">Settings</h2><p class="muted">Loading...</p>');
+    api('getSettingsForEdit').then(function (list) {
+      S.settingsDefs = list;
+      var html = '<div class="sh-head"><h2 id="sheetTitle">Settings</h2></div><div class="sh-form">' + list.map(function (d) {
+        var id = 'st_' + d.key, ctl;
+        if (d.type === 'bool') ctl = '<select id="' + id + '"><option value="TRUE"' + (d.value === 'TRUE' ? ' selected' : '') + '>Yes</option><option value="FALSE"' + (d.value !== 'TRUE' ? ' selected' : '') + '>No</option></select>';
+        else if (d.type === 'number') ctl = '<input type="number" id="' + id + '" min="' + d.min + '" max="' + d.max + '" value="' + esc(d.value) + '">';
+        else if (d.type === 'list') ctl = '<textarea id="' + id + '">' + esc(d.value) + '</textarea>';
+        else ctl = '<input type="text" id="' + id + '" maxlength="' + (d.max || 60) + '" value="' + esc(d.value) + '">';
+        return fld(id, esc(d.label), ctl);
+      }).join('') + '</div><div class="btn-row"><button class="btn" data-act="settings-save">Save settings</button><button class="btn btn-ghost" data-act="close-sheet">Close</button></div>';
+      $('#sheetBody').innerHTML = html;
+    }).catch(fail);
+  }
+  function saveSettings(btn) {
+    var vals = {};
+    (S.settingsDefs || []).forEach(function (d) { vals[d.key] = $('#st_' + d.key).value; });
+    btn.disabled = true; btn.textContent = 'Saving...';
+    api('saveSettings', vals).then(function () {
+      toast('Settings saved.'); closeSheet();
+      S.up.opts = null; api('getUploadOptions').then(function (o) { S.up.opts = o; }).catch(function () {});
+    }).catch(function (e) { btn.disabled = false; btn.textContent = 'Save settings'; fail(e); });
+  }
+
+  /* change own PIN */
+  function openPinChange() {
+    openSheet('<div class="sh-head"><h2 id="sheetTitle">Change PIN</h2></div><div class="sh-form">' +
+      fld('pcOld', 'Current PIN', '<input type="password" id="pcOld" inputmode="numeric" maxlength="8" autocomplete="current-password">') +
+      fld('pcNew', 'New PIN (4 to 8 digits)', '<input type="password" id="pcNew" inputmode="numeric" maxlength="8" autocomplete="new-password">') +
+      fld('pcNew2', 'New PIN again', '<input type="password" id="pcNew2" inputmode="numeric" maxlength="8" autocomplete="new-password">') +
+      '</div><div class="btn-row"><button class="btn" data-act="pin-save">Save new PIN</button><button class="btn btn-ghost" data-act="close-sheet">Cancel</button></div>');
+  }
+  function savePin(btn) {
+    var a = $('#pcOld').value.trim(), b = $('#pcNew').value.trim(), c = $('#pcNew2').value.trim();
+    if (!a || !b) { toast('Fill in all the fields.', 'error'); return; }
+    if (b !== c) { toast('The two new PINs do not match.', 'error'); return; }
+    btn.disabled = true; btn.textContent = 'Saving...';
+    api('changeMyPin', a, b).then(function () { toast('PIN changed.'); closeSheet(); })
+      .catch(function (e) { btn.disabled = false; btn.textContent = 'Save new PIN'; fail(e); });
+  }
+
+  /* reopen a completed delivery */
+  function openReopen(id) {
+    var d = S.byId[id];
+    if (!d) return;
+    REOPEN_REQ = newRequestId();
+    openSheet('<div class="sh-head"><h2 id="sheetTitle">Reopen delivery</h2></div><p class="muted">' + esc(d.CustomerName) + ', invoice ' + esc(d.InvoiceNumber || '-') +
+      '. The delivery goes back to Pending. The earlier completion stays in its history.</p><div class="sh-form">' +
+      fld('roReason', 'Reason for reopening', '<textarea id="roReason" maxlength="300"></textarea>') +
+      '</div><div class="btn-row"><button class="btn btn-bad" data-act="reopen-submit" data-id="' + esc(id) + '">Reopen delivery</button><button class="btn btn-ghost" data-act="close-sheet">Cancel</button></div>');
+  }
+  function submitReopen(btn) {
+    var id = btn.getAttribute('data-id'), d = S.byId[id], reason = $('#roReason').value.trim();
+    if (reason.length < 5) { setErr('roReason', 'Please give a reason (at least 5 characters).'); return; }
+    btn.disabled = true; btn.textContent = 'Reopening...';
+    api('reopenDelivery', id, reason, d.LastUpdatedAt, REOPEN_REQ).then(function (res) {
+      afterSave();
+      if (res.delivery) S.byId[id] = res.delivery;
+      toast('Delivery reopened.');
+      closeSheet(); refreshCurrent(); openDetail(id);
+    }).catch(function (e) { btn.disabled = false; btn.textContent = 'Reopen delivery'; fail(e); });
+  }
+
+  /* godown: material prepared / handed over */
+  function markMaterialStep(btn) {
+    var id = btn.getAttribute('data-id'), stage = btn.getAttribute('data-stage');
+    btn.disabled = true;
+    api('markMaterial', id, stage).then(function () {
+      toast(stage === 'PREPARED' ? 'Marked as prepared.' : 'Marked as handed over.');
+      loadDetail(id);
+    }).catch(function (e) { btn.disabled = false; fail(e); });
+  }
+
+  /* ---------- actions ---------- */
+  function act(name, el) {
+    switch (name) {
+      case 'view': var c = el.closest('.dcard'); if (c) openDetail(c.getAttribute('data-id')); break;
+      case 'close-sheet': closeSheet(); break;
+      case 'fab': openForm('new'); break;
+      case 'edit': var ed = S.byId[el.getAttribute('data-id')]; if (ed) openForm('edit', ed); break;
+      case 'form-cancel': closeForm(); break;
+      case 'login': doLogin(); break;
+      case 'logout': doLogout(); break;
+      case 'retry': bootApp(); break;
+      case 'pin-change': openPinChange(); break;
+      case 'pin-save': savePin(el); break;
+      case 'emp-list': openEmployees(); break;
+      case 'emp-back': renderEmployees(); break;
+      case 'emp-new': openSheet(empFormHtml(null)); break;
+      case 'emp-edit': var ee = S.emps.filter(function (x) { return x.id === el.getAttribute('data-id'); })[0]; if (ee) openSheet(empFormHtml(ee)); break;
+      case 'emp-save': saveEmp(el); break;
+      case 'settings': openSettings(); break;
+      case 'settings-save': saveSettings(el); break;
+      case 'reopen': openReopen(el.getAttribute('data-id')); break;
+      case 'reopen-submit': submitReopen(el); break;
+      case 'material': markMaterialStep(el); break;
+      case 'wf': var wd = S.byId[el.getAttribute('data-id')]; if (wd) openAction(el.getAttribute('data-kind'), wd); break;
+      case 'act-cancel': closeAction(); break;
+      case 'act-submit': submitAction(); break;
+      case 'sig-clear': if (ACT.clearSig) ACT.clearSig(); break;
+      case 'rm-aphoto': ACT.photos.splice(+el.getAttribute('data-i'), 1); renderActFiles(); break;
+      case 'lb-open': openLightbox(el.getAttribute('data-del'), el.getAttribute('data-id')); break;
+      case 'lb-close': closeLightbox(); break;
+      case 'lb-prev': lbStep(-1); break;
+      case 'lb-next': lbStep(1); break;
+      case 'lb-pdf': openPdf(el.getAttribute('data-id')); break;
+      case 'rm-photo': FORM.files.photos.splice(+el.getAttribute('data-i'), 1); renderSelected(); break;
+      case 'rm-invoice': FORM.files.invoice = null; renderSelected(); break;
+      case 'refresh': refreshAll(); break;
+      case 'cal-mode': S.cal.mode = el.getAttribute('data-mode'); loadCalendar(); break;
+      case 'cal-prev': calStep(-1); break;
+      case 'cal-next': calStep(1); break;
+      case 'cal-today': S.cal.sel = S.boot.today; loadCalendar(); break;
+      case 'cal-pick': S.cal.sel = el.getAttribute('data-date'); loadCalendar(); break;
+      case 'preset': showView('deliveries', true); preset(el.getAttribute('data-preset'), el.getAttribute('data-status')); break;
+      case 'clear-filters': preset('all', ''); break;
+      case 'more': loadList(false); break;
+      case 'rp-open': openReport(el.getAttribute('data-type')); break;
+      case 'rp-run': runReport(rpParams(), el); break;
+      case 'rp-back': rpReset(); renderReportMenu(); break;
+      case 'rp-change': if (rpInfo(RP.type) && rpInfo(RP.type)[3]) { RP.res = null; RP.pdf = null; renderReportForm(RP.type); } else { rpReset(); renderReportMenu(); } break;
+      case 'rp-csv': saveCsv(); break;
+      case 'rp-pdf': makeReportPdf(el); break;
+      case 'rp-pdf-open': openReportPdf(); break;
+    }
+  }
+  function refreshAll() {
+    S.calCache = {};
+    toast('Refreshing...');
+    loadDashboard().then(function () {
+      if (S.view === 'calendar') loadCalendar();
+      if (S.view === 'deliveries') loadList(true);
+    });
+  }
+
+  document.addEventListener('click', function (e) {
+    var a = e.target.closest('[data-act]');
+    if (a) { act(a.getAttribute('data-act'), a); return; }
+    var v = e.target.closest('[data-view]');
+    if (v) { showView(v.getAttribute('data-view')); return; }
+    var c = e.target.closest('.dcard');
+    if (c) openDetail(c.getAttribute('data-id'));
+  });
+  document.addEventListener('keydown', function (e) {
+    if (!$('#lightbox').hidden) {
+      if (e.key === 'Escape') closeLightbox();
+      else if (e.key === 'ArrowLeft') lbStep(-1);
+      else if (e.key === 'ArrowRight') lbStep(1);
+      return;
+    }
+    if (e.key === 'Escape' && !$('#sheet').hidden) closeSheet();
+  });
+  document.addEventListener('change', function (e) {
+    var t = e.target;
+    if (!t) return;
+    if (t.id === 'addFiles') handleAddFiles(t);
+    else if (t.id === 'afPhotos') handleActPick(t);
+    else if (t.id === 'afReason') { var w = $('#afCustomWrap'); if (w) w.hidden = (t.value !== 'Other'); }
+  });
+  $('#view-action').addEventListener('input', function () { ACT.dirty = true; });
+  $('#fdPhotos').addEventListener('change', function () { handlePick(this, 'photos'); });
+  $('#fdInvoice').addEventListener('change', function () { handlePick(this, 'invoice'); });
+  document.addEventListener('visibilitychange', function () {
+    if (!document.hidden && S.boot && S.view === 'dashboard' && Date.now() - S.dashAt > 60000) loadDashboard();
+  });
+
+  ['fFrom','fTo','fStatus','fEmp','fSort'].forEach(function (id) { $('#' + id).addEventListener('change', readInputs); });
+  var typing;
+  ['fCust','fInv','fVeh'].forEach(function (id) {
+    $('#' + id).addEventListener('input', function () { clearTimeout(typing); typing = setTimeout(readInputs, 450); });
+  });
+  $('#deliveryForm').addEventListener('submit', submitForm);
+  $('#deliveryForm').addEventListener('input', function () { FORM.dirty = true; });
+  $('#globalSearch').addEventListener('keydown', function (e) {
+    if (e.key !== 'Enter') return;
+    var q = this.value.trim();
+    if (!q) return;
+    this.blur();
+    showView('deliveries', true);
+    setFilters({query: q}, 'custom');
+  });
+
+  /* ---------- start ---------- */
+  $('#lgPin').addEventListener('keydown', function (e) { if (e.key === 'Enter') doLogin(); });
+  $('#lgMobile').addEventListener('keydown', function (e) { if (e.key === 'Enter') $('#lgPin').focus(); });
+  S.token = loadToken();
+  if (S.token) bootApp(); else showLogin('');
+})();
+</script>
+
+</body>
+</html>
